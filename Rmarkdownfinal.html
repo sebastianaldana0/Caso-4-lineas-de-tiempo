@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Aplicación de Algoritmos de Machine Learning para la Evaluación del Riesgo Crediticio en Leading Club</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Aguirre Aldana Joan Sebastian, Moreno Tamayo Jose Americo" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="animate.css" type="text/css" />
+    <link rel="stylesheet" href="sebastian-xaringan.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Aplicación de Algoritmos de Machine Learning para la Evaluación del Riesgo Crediticio en Leading Club
+]
+.subtitle[
+## Aguirre Aldana Joan Sebastian, Moreno Tamayo Jose Americo
+]
+.author[
+### Aguirre Aldana Joan Sebastian, Moreno Tamayo Jose Americo
+]
+.date[
+### 30 noviembre 2025
+]
+
+---
+
+
+
+
+
+
+
+# Introducción {.page-header}
+
+::: academic-card
+El mercado de valores colombiano ha experimentado transformaciones significativas durante la última década, reflejadas en el comportamiento del índice COLCAP, principal referente del mercado accionario del país. Este índice de capitalización bursátil, que agrupa las 20 acciones más líquidas de la Bolsa de Valores de Colombia (BVC), constituye un termómetro fundamental para medir la salud económica nacional y la confianza de los inversionistas tanto locales como internacionales.​
+
+El presente trabajo se enfoca en el análisis del índice COLCAP durante el período comprendido entre 2015 y 2025, una década caracterizada por eventos económicos, políticos y sanitarios de gran envergadura que han moldeado el desempeño del mercado bursátil colombiano. Esta ventana temporal es particularmente relevante, ya que abarca desde la crisis de precios del petróleo en 2015, pasando por la pandemia del COVID-19 en 2020, hasta la recuperación histórica registrada en 2025, cuando el índice alcanzó máximos nunca antes vistos.
+
+El índice COLCAP fue creado en enero de 2008 con un valor inicial de 1.000 puntos y reemplazó al Índice General de la Bolsa de Valores de Colombia (IGBC) como principal indicador bursátil en noviembre de 2013 (Rankia, 2024; Tyba, 2023). Su metodología de cálculo se basa en la capitalización bursátil ajustada por flotante, lo que significa que cada acción se pondera según su valor de mercado disponible para negociación, sin considerar las acciones en poder de inversionistas con interés de control (Citibank, 2024; Studocu, 2022). Desde mayo de 2021, la firma internacional MSCI Inc. asumió la construcción, cálculo y mantenimiento del índice, denominándolo MSCI COLCAP, lo que le otorgó estándares internacionales y mayor credibilidad ante inversionistas globales (Studocu, 2022; S&amp;P Global, 2024).
+
+En un contexto de economía global cada vez más integrada e incierta, la capacidad de anticipar y comprender el comportamiento de los indicadores financieros es fundamental para la toma de decisiones estratégicas en niveles tanto empresarial como institucional (Concur, 2022; EAFIT, 2013). El análisis de series temporales emerge como una herramienta analítica poderosa que transforma datos históricos en horizontes de predicción, permitiendo identificar patrones, ciclos y tendencias que permanecen ocultos a simple vista (Mathworks, 2025; Galaksiya, 2024). En particular, cuando se aplica al estudio de indicadores económicos y financieros clave —como el mercado laboral, el comercio internacional, la actividad productiva y los mercados bursátiles— esta metodología proporciona elementos de juicio invaluables para formular estrategias que anticipen cambios futuros y optimicen la asignación de recursos (UNAD, 2024; Bertia, 2025).
+
+El índice COLCAP, principal referente del mercado accionario colombiano, constituye un caso de estudio paradigmático de la relevancia de las series temporales en la realidad económica nacional (INCP, 2024; Ministerio de Hacienda, 2025). Durante la última década, este índice ha experimentado transformaciones dramáticas que reflejan los ciclos de la economía colombiana: desde la crisis de 2015 provocada por la caída de precios del petróleo, pasando por el impacto devastador de la pandemia COVID-19 en 2020, hasta el rally histórico de 2025 que lo posicionó como el índice de mayor rendimiento en América Latina, superando por primera vez los 2.000 puntos (INCP, 2024; Ministerio de Hacienda, 2025; EAFIT, 2024). Comprender la trayectoria temporal del COLCAP no es únicamente un ejercicio académico: sus movimientos capturan la confianza de inversionistas locales e internacionales, reflejan la salud macroeconómica del país y comunican señales críticas sobre la viabilidad de las políticas económicas adoptadas (Ministerio de Hacienda, 2025; Colombia Chamber, 2025).
+
+La importancia estratégica de predecir el comportamiento del COLCAP radica en múltiples dimensiones. Para inversionistas y fondos de capital, la capacidad de proyectar las trayectorias futuras del índice permite optimizar portafolios, identificar oportunidades de compra en valles de volatilidad y protegerse contra potenciales caídas (García, 2013; EAFIT, 2024). Para analistas financieros y formuladores de política pública, los modelos predictivos basados en series temporales revelan la relación entre variables macroeconómicas —como la inflación, las tasas de interés, el tipo de cambio y el riesgo país— y el desempeño bursátil, facilitando la formulación de políticas coherentes con los objetivos de estabilidad y crecimiento (Osorio, 2024; Universidad del Rosario, 2021). Asimismo, para las empresas listadas en bolsa, comprender cómo evoluciona su representación en el índice a través del tiempo permite identificar períodos de sobre o subvaloración, así como alinear estrategias corporativas con ciclos de mercado previsibles (García, 2013; EAFIT, 2024).
+
+Este trabajo se propone analizar la serie temporal del índice COLCAP durante el período 2015-2025, identificando los patrones, ciclos y determinantes que explican su evolución, y desarrollando modelos predictivos que permitan proyectar su comportamiento futuro. Al combinar el análisis retrospectivo con ejercicios de pronóstico, se busca demostrar que las técnicas de series temporales no solo capturan la complejidad no lineal de los mercados financieros, sino que también generan insumos valiosos para la toma de decisiones informadas en contextos de incertidumbre (Osorio, 2024; Universidad del Rosario, 2021). La investigación contribuye así a cerrar una brecha entre la teoría de análisis temporal y su aplicación práctica al mercado de capitales colombiano, proporcionando marcos metodológicos replicables para otros indicadores y contextos económicos emergentes (García, 2013; EAFIT, 2024).
+
+:::
+
+# Metodologia
+
+## Serie de tiempo
+
+Una serie de tiempo es una secuencia de observaciones de una variable específica registradas en intervalos de tiempo regulares y ordenadas cronológicamente (Box &amp; Jenkins, 1970; Wikipedia, 2007). Estas observaciones pueden estar espaciadas en forma mensual, trimestral, semanal o diaria, dependiendo del fenómeno bajo estudio (Wikipedia, 2007). En el contexto financiero y económico, las series de tiempo permiten analizar el comportamiento histórico de variables como precios de acciones, índices bursátiles, tipos de cambio e indicadores macroeconómicos, con el objetivo de identificar patrones subyacentes y realizar pronósticos sobre su evolución futura (DataCamp, 2024).
+
+El análisis de series temporales se fundamenta en el estudio de diferentes componentes que caracterizan el comportamiento de los datos a través del tiempo. La **tendencia** representa el patrón de largo plazo que muestra la dirección general de la serie, ya sea creciente, decreciente o constante. La **estacionalidad** corresponde a fluctuaciones periódicas que se repiten en intervalos fijos de tiempo, como cambios mensuales o trimestrales provocados por factores cíclicos. El componente **cíclico** refleja oscilaciones de largo plazo que no tienen un período fijo y suelen estar relacionadas con ciclos económicos. Finalmente, el componente **aleatorio** o residual representa la variabilidad inexplicable que permanece después de eliminar los otros componentes.
+
+La importancia del análisis de series de tiempo radica en su capacidad para extraer información representativa sobre las relaciones subyacentes entre los datos, permitiendo realizar predicciones sobre momentos no observados, ya sea en el futuro (pronósticos), en el pasado (extrapolación retrógrada) o en momentos intermedios (interpolación) (Wikipedia, 2007). En el ámbito financiero, estas predicciones son fundamentales para la toma de decisiones estratégicas, la gestión de riesgos y la planificación de inversiones (DataCamp, 2024).
+
+
+# Descripcion de la serie temporal
+
+
+# Resultados del modelo ARIMA
+
+# Concluciones 
+
+::: academic-footer
+**Universidad del Valle** \| *Facultad de ingenieria* \| Gestion de datos
+:::
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+  "ratio": "16:9",
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false,
+  "slideNumberFormat": "%current% / %total%",
+  "toc": true,
+  "tocDepth": 3
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -1,0 +1,410 @@
+
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+:root {
+  --white: #FFFFFF;
+  --cream-light: #FFFBF7;
+  --cream-medium: #F8F4F0;
+  --black: #000000;
+  --black-soft: #2C1810;
+  --brown-dark: #5D4037;
+  --brown-medium: #8B4513;
+  --brown-light: #A0522D;
+  --brown-accent: #D2691E;
+  --brown-warm: #CD853F;
+  --gold-light: #D4AF37;
+  --text-dark: #2C1810;
+  --text-medium: #5D4037;
+  --border-light: #E8E8E8;
+}
+
+body {
+  font-family: 'Crimson Text', 'Times New Roman', serif;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--text-dark);
+  background: var(--white) !important;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+/* PORTADA PERSONALIZADA */
+.custom-cover {
+  background: 
+    /* Gradiente sutil cafés */
+    linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(255, 255, 255, 1) 70%),
+    /* Imagen de portada */
+    url('Portada2.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 8px solid var(--brown-medium);
+}
+
+/* Patrón geométrico inspirado en arte indígena */
+.custom-cover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    /* Patrón geométrico sutil */
+    radial-gradient(circle at 20% 80%, rgba(93, 64, 55, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 60%, rgba(205, 133, 63, 0.05) 60%, rgba(205, 133, 63, 0.05) 70%, transparent 70%),
+    linear-gradient(-45deg, transparent 60%, rgba(160, 82, 45, 0.05) 60%, rgba(160, 82, 45, 0.05) 70%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cover-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(93, 64, 55, 0.2);
+  border: 2px solid var(--brown-warm);
+}
+
+.cover-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: var(--black-soft);
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+  border-bottom: 3px double var(--brown-medium);
+  padding-bottom: 1rem;
+}
+
+.cover-subtitle {
+  font-family: 'Crimson Text', serif;
+  font-size: 1.6rem;
+  color: var(--brown-dark);
+  margin-bottom: 2rem;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.cover-authors {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.3rem;
+  color: var(--brown-medium);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.cover-date {
+  font-family: 'Crimson Text', serif;
+  font-size: 1.1rem;
+  color: var(--brown-light);
+  font-style: italic;
+}
+
+.cover-institution {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1rem;
+  color: var(--brown-accent);
+  margin-top: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* CONTENIDO PRINCIPAL */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem;
+  background: var(--white);
+  position: relative;
+  z-index: 1;
+}
+
+/* ENCABEZADOS CON ESTILO INDÍGENA COLOMBIANO */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cinzel Decorative', 'Times New Roman', serif;
+  color: var(--black-soft) !important;
+  border-bottom: none;
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  position: relative;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 3px double var(--brown-medium);
+  background: linear-gradient(90deg, transparent, rgba(139, 69, 19, 0.1), transparent);
+  letter-spacing: -0.5px;
+}
+
+h2 {
+  font-size: 2rem;
+  border-left: 5px solid var(--brown-medium);
+  padding-left: 1.2rem;
+  margin-top: 3rem;
+  background: linear-gradient(90deg, rgba(139, 69, 19, 0.1) 0%, transparent 100%);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+h3 {
+  font-size: 1.6rem;
+  color: var(--brown-dark) !important;
+  border-bottom: 2px solid var(--brown-light);
+  padding-bottom: 0.7rem;
+  margin-top: 2.5rem;
+}
+
+h4 {
+  font-size: 1.4rem;
+  color: var(--brown-medium) !important;
+  margin-top: 2rem;
+  font-weight: 600;
+}
+
+/* TOC - TABLA DE CONTENIDOS ESTILO CAFÉ */
+#TOC {
+  background: var(--cream-light) !important;
+  border: 2px solid var(--brown-medium) !important;
+  border-radius: 12px !important;
+  padding: 2rem !important;
+  margin: 2rem 0 !important;
+  box-shadow: 0 4px 20px rgba(93, 64, 55, 0.1) !important;
+  font-family: 'Cinzel Decorative', serif !important;
+}
+
+#TOC::before {
+  content: "Índice de Contenidos";
+  display: block;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--brown-medium);
+}
+
+#TOC ul {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+#TOC li {
+  margin: 0.8rem 0 !important;
+  padding: 0 !important;
+  border-left: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+#TOC li:hover {
+  border-left-color: var(--brown-medium);
+  background: rgba(139, 69, 19, 0.1);
+}
+
+#TOC a {
+  color: var(--text-medium) !important;
+  text-decoration: none !important;
+  font-family: 'Crimson Text', serif !important;
+  font-size: 1rem !important;
+  padding: 0.5rem 1rem !important;
+  display: block !important;
+  transition: all 0.3s ease !important;
+  border-radius: 4px;
+}
+
+#TOC a:hover {
+  color: var(--black-soft) !important;
+  background: rgba(139, 69, 19, 0.1) !important;
+  transform: translateX(5px);
+}
+
+/* BLOQUES DE CÓDIGO CON TEMÁTICA CAFÉ */
+pre.sourceCode {
+  display: block !important;
+  background: var(--cream-medium) !important;
+  color: var(--text-dark) !important;
+  padding: 15px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  overflow-x: auto;
+  margin: 15px 0 !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 0.85em;
+  line-height: 1.4;
+  border-left: 4px solid var(--brown-medium) !important;
+  box-shadow: 0 2px 8px rgba(93, 64, 55, 0.1);
+}
+
+pre.sourceCode code {
+  background: transparent !important;
+  color: var(--text-dark) !important;
+  padding: 0 !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+/* COLORES DE SINTAXIS EN TONOS CAFÉS */
+pre.sourceCode code .kw { color: var(--brown-dark); font-weight: bold; }
+pre.sourceCode code .dt { color: var(--brown-medium); }
+pre.sourceCode code .dv { color: var(--brown-light); }
+pre.sourceCode code .st { color: var(--brown-medium); }
+pre.sourceCode code .co { color: var(--text-medium); font-style: italic; }
+pre.sourceCode code .ot { color: var(--brown-dark); }
+pre.sourceCode code .fu { color: var(--brown-dark); }
+pre.sourceCode code .va { color: var(--brown-medium); }
+
+/* TABLAS CON ESTILO CAFÉ */
+table {
+  font-family: 'Crimson Text', serif !important;
+  border: 2px solid var(--brown-medium) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 20px rgba(93, 64, 55, 0.1) !important;
+  margin: 2rem auto !important;
+}
+
+thead th {
+  font-family: 'Cinzel Decorative', serif !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  padding: 1.2rem !important;
+  border-bottom: 3px solid var(--brown-medium) !important;
+  background: linear-gradient(135deg, var(--brown-medium) 0%, var(--brown-dark) 100%) !important;
+  color: white !important;
+}
+
+tbody tr {
+  transition: all 0.3s ease !important;
+  background: var(--white);
+}
+
+tbody tr:nth-child(even) {
+  background: var(--cream-light);
+}
+
+tbody tr:hover {
+  background-color: rgba(139, 69, 19, 0.1) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.2) !important;
+}
+
+td {
+  padding: 1rem !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  vertical-align: top !important;
+  color: var(--text-dark);
+}
+
+/* FOOTER ACADÉMICO */
+.academic-footer {
+  text-align: center;
+  color: var(--brown-medium);
+  margin-top: 5rem;
+  padding: 3rem 2rem;
+  border-top: 3px double var(--brown-medium);
+  font-family: 'Cinzel Decorative', serif;
+  background: var(--cream-light);
+  border-radius: 8px 8px 0 0;
+  position: relative;
+}
+
+/* MEJORAS RESPONSIVE */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
+  
+  .custom-cover {
+    padding: 2rem 1rem;
+    min-height: 70vh;
+  }
+  
+  .cover-content {
+    padding: 2rem;
+  }
+  
+  .cover-title {
+    font-size: 2.2rem;
+  }
+  
+  .cover-subtitle {
+    font-size: 1.3rem;
+  }
+}
+
+/* JUSTIFICACIÓN DE PÁRRAFOS */
+.main-content p {
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  margin-bottom: 1.2rem;
+  color: var(--text-dark);
+}
+
+/* ENLACES */
+a {
+  color: var(--brown-medium);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: var(--brown-dark);
+  text-decoration: underline;
+}
+
+/* LISTAS */
+ul, ol {
+  color: var(--text-dark);
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+/* CITAS Y BLOQUES */
+blockquote {
+  border-left: 4px solid var(--brown-medium);
+  background: var(--cream-light);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: var(--text-medium);
+}
+
+/* FIGURAS Y GRÁFICOS */
+.figure {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.caption {
+  font-family: 'Crimson Text', serif;
+  font-style: italic;
+  color: var(--brown-medium);
+  margin-top: 0.5rem;
+}
+

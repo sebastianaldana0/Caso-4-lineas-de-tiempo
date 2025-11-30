@@ -1,0 +1,634 @@
+---
+title: "Aplicación de Algoritmos de Machine Learning para la Evaluación del Riesgo Crediticio en Leading Club"
+subtitle: "Aguirre Aldana Joan Sebastian, Moreno Tamayo Jose Americo"
+author: "Aguirre Aldana Joan Sebastian, Moreno Tamayo Jose Americo"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts, animate.css, sebastian-xaringan.css]
+    lib_dir: libs
+    nature:
+      ratio: '16:9'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      slideNumberFormat: "%current% / %total%"
+      beforeInit: "https://platform.twitter.com/widgets.js"
+      toc: true
+      tocDepth: 3
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r librerias, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  out.width = "85%",
+  comment = ""          
+)
+
+library(dplyr)
+library(tidyr)
+library(readr)
+library(tidyverse)
+library(class)
+library(caret)
+library(pROC)
+library(ggthemes)
+library(lubridate)
+library(kableExtra)
+library(knitr)
+library(ggcorrplot)
+library(scales)
+library(gridExtra)
+library(grid)
+library(ggplotify)
+library(broom)
+library(DT)
+library(scales)
+library(htmltools)
+library(plotly)
+library(gganimate)
+library(xaringan)
+library(xaringanthemer)
+```
+
+
+```{css Tema, include=FALSE}
+/* Sebastian-xaringan.css - Diseño Animado y Futurista */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+:root {
+  --primary: #6366F1;
+  --primary-dark: #4338CA;
+  --primary-light: #818CF8;
+  --secondary: #06D6A0;
+  --secondary-dark: #05B384;
+  --accent: #FF6B6B;
+  --accent-dark: #FF5252;
+  --dark: #0F172A;
+  --dark-medium: #1E293B;
+  --light: #F8FAFC;
+  --gray: #64748B;
+  --neon-blue: #00F5FF;
+  --neon-purple: #A855F7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--light);
+  background: linear-gradient(135deg, var(--dark) 0%, var(--dark-medium) 100%);
+  overflow-x: hidden;
+}
+
+/* ANIMACIONES GLOBALES */
+.remark-slide-content {
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(6, 214, 160, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, var(--dark) 0%, var(--dark-medium) 100%);
+  padding: 1em 4em 1em 4em;
+  position: relative;
+  overflow: hidden;
+}
+
+.remark-slide-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(99,102,241,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+  opacity: 0.3;
+  z-index: 0;
+}
+
+/* PORTADA ANIMADA */
+.title-slide {
+  background: 
+    linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%),
+    url('Portada2.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.title-slide::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 45%, var(--neon-blue) 50%, transparent 55%);
+  animation: shine 3s infinite linear;
+  z-index: 1;
+}
+
+@keyframes shine {
+  0% { transform: rotate(0deg) translateX(-100px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(-100px) rotate(-360deg); }
+}
+
+.title-slide h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: 3.5em;
+  font-weight: 900;
+  color: var(--light);
+  text-shadow: 
+    0 0 10px var(--primary),
+    0 0 20px var(--primary),
+    0 0 30px var(--primary);
+  margin-bottom: 0.5em;
+  position: relative;
+  z-index: 2;
+  animation: titleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  from {
+    text-shadow: 
+      0 0 10px var(--primary),
+      0 0 20px var(--primary),
+      0 0 30px var(--primary);
+  }
+  to {
+    text-shadow: 
+      0 0 15px var(--primary-light),
+      0 0 25px var(--primary-light),
+      0 0 35px var(--primary-light);
+  }
+}
+
+.title-slide h2 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.8em;
+  color: var(--secondary);
+  margin-bottom: 1em;
+  position: relative;
+  z-index: 2;
+  animation: fadeInUp 1s ease-out;
+}
+
+.title-slide h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.3em;
+  color: var(--light);
+  position: relative;
+  z-index: 2;
+  animation: fadeInUp 1s ease-out 0.5s both;
+}
+
+.title-slide .date {
+  font-family: 'Roboto Mono', monospace;
+  color: var(--gray);
+  position: relative;
+  z-index: 2;
+  animation: fadeInUp 1s ease-out 1s both;
+}
+
+/* ANIMACIONES DE TEXTO */
+h1, h2, h3 {
+  font-family: 'Orbitron', monospace;
+  color: var(--light) !important;
+  margin-top: 0;
+  position: relative;
+}
+
+h1 {
+  font-size: 2.5em;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5em;
+  animation: slideInLeft 0.8s ease-out;
+}
+
+h2 {
+  font-size: 2em;
+  color: var(--secondary) !important;
+  border-left: 4px solid var(--secondary);
+  padding-left: 0.5em;
+  margin-bottom: 0.5em;
+  animation: slideInRight 0.8s ease-out;
+}
+
+h3 {
+  font-size: 1.5em;
+  color: var(--primary-light) !important;
+  margin-bottom: 0.5em;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+/* ANIMACIONES CSS */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* CONTENIDO ANIMADO */
+.remark-slide-content p, .remark-slide-content ul, .remark-slide-content ol {
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: var(--light);
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.remark-slide-content ul, .remark-slide-content ol {
+  margin-left: 1.5em;
+}
+
+.remark-slide-content li {
+  margin-bottom: 0.5em;
+  animation: fadeInUp 0.8s ease-out;
+  animation-fill-mode: both;
+}
+
+.remark-slide-content li:nth-child(1) { animation-delay: 0.1s; }
+.remark-slide-content li:nth-child(2) { animation-delay: 0.2s; }
+.remark-slide-content li:nth-child(3) { animation-delay: 0.3s; }
+.remark-slide-content li:nth-child(4) { animation-delay: 0.4s; }
+.remark-slide-content li:nth-child(5) { animation-delay: 0.5s; }
+
+/* BLOQUES DE CÓDIGO ANIMADOS */
+.remark-code {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9em;
+  background: var(--dark-medium) !important;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  padding: 1em !important;
+  box-shadow: 
+    0 0 20px rgba(99, 102, 241, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: codePulse 2s infinite alternate;
+}
+
+@keyframes codePulse {
+  from {
+    box-shadow: 
+      0 0 20px rgba(99, 102, 241, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  to {
+    box-shadow: 
+      0 0 30px rgba(99, 102, 241, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
+.remark-inline-code {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--primary-light);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: 'Roboto Mono', monospace;
+  animation: blink 2s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* TABLAS ANIMADAS */
+.remark-slide-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1em 0;
+  background: var(--dark-medium);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  animation: tableSlide 0.8s ease-out;
+}
+
+@keyframes tableSlide {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.remark-slide-content th {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: 1em;
+  text-align: left;
+  font-family: 'Orbitron', monospace;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.remark-slide-content th::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.remark-slide-content td {
+  padding: 0.8em 1em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.remark-slide-content tr:hover td {
+  background: rgba(99, 102, 241, 0.1);
+  transform: translateX(5px);
+}
+
+/* BOTONES Y ELEMENTOS INTERACTIVOS */
+.slide-button {
+  display: inline-block;
+  padding: 0.8em 1.5em;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 25px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.slide-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+}
+
+/* ELEMENTOS DE REALCE */
+.highlight-box {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(6, 214, 160, 0.1) 100%);
+  border: 1px solid var(--primary);
+  border-radius: 12px;
+  padding: 1.5em;
+  margin: 1em 0;
+  position: relative;
+  overflow: hidden;
+  animation: highlightGlow 3s infinite alternate;
+}
+
+@keyframes highlightGlow {
+  from {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
+  }
+}
+
+/* FOOTER ANIMADO */
+.remark-slide-number {
+  font-family: 'Roboto Mono', monospace;
+  color: var(--gray) !important;
+  opacity: 0.7;
+  font-size: 0.8em;
+  animation: fadeIn 1s ease-out 2s both;
+}
+
+/* EFECTOS DE PARTÍCULAS (pseudo-elementos) */
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--neon-blue);
+  border-radius: 50%;
+  animation: float 6s infinite linear;
+  opacity: 0.3;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .remark-slide-content {
+    padding: 1em 2em;
+  }
+  
+  .title-slide h1 {
+    font-size: 2.5em;
+  }
+  
+  .title-slide h2 {
+    font-size: 1.3em;
+  }
+}
+
+/* CLASES UTILITARIAS PARA ANIMACIONES */
+.animate-pop { animation: popIn 0.6s ease-out; }
+.animate-bounce { animation: bounce 2s infinite; }
+.animate-rotate { animation: rotate 4s linear infinite; }
+.animate-fade { animation: fadeIn 1s ease-out; }
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* BARRA DE PROGRESO */
+.progress-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  width: 0%;
+  z-index: 1000;
+  transition: width 0.3s ease;
+}
+
+
+```
+
+# Introducción {.page-header}
+
+::: academic-card
+El mercado de valores colombiano ha experimentado transformaciones significativas durante la última década, reflejadas en el comportamiento del índice COLCAP, principal referente del mercado accionario del país. Este índice de capitalización bursátil, que agrupa las 20 acciones más líquidas de la Bolsa de Valores de Colombia (BVC), constituye un termómetro fundamental para medir la salud económica nacional y la confianza de los inversionistas tanto locales como internacionales.​
+
+El presente trabajo se enfoca en el análisis del índice COLCAP durante el período comprendido entre 2015 y 2025, una década caracterizada por eventos económicos, políticos y sanitarios de gran envergadura que han moldeado el desempeño del mercado bursátil colombiano. Esta ventana temporal es particularmente relevante, ya que abarca desde la crisis de precios del petróleo en 2015, pasando por la pandemia del COVID-19 en 2020, hasta la recuperación histórica registrada en 2025, cuando el índice alcanzó máximos nunca antes vistos.
+
+El índice COLCAP fue creado en enero de 2008 con un valor inicial de 1.000 puntos y reemplazó al Índice General de la Bolsa de Valores de Colombia (IGBC) como principal indicador bursátil en noviembre de 2013 (Rankia, 2024; Tyba, 2023). Su metodología de cálculo se basa en la capitalización bursátil ajustada por flotante, lo que significa que cada acción se pondera según su valor de mercado disponible para negociación, sin considerar las acciones en poder de inversionistas con interés de control (Citibank, 2024; Studocu, 2022). Desde mayo de 2021, la firma internacional MSCI Inc. asumió la construcción, cálculo y mantenimiento del índice, denominándolo MSCI COLCAP, lo que le otorgó estándares internacionales y mayor credibilidad ante inversionistas globales (Studocu, 2022; S&P Global, 2024).
+
+En un contexto de economía global cada vez más integrada e incierta, la capacidad de anticipar y comprender el comportamiento de los indicadores financieros es fundamental para la toma de decisiones estratégicas en niveles tanto empresarial como institucional (Concur, 2022; EAFIT, 2013). El análisis de series temporales emerge como una herramienta analítica poderosa que transforma datos históricos en horizontes de predicción, permitiendo identificar patrones, ciclos y tendencias que permanecen ocultos a simple vista (Mathworks, 2025; Galaksiya, 2024). En particular, cuando se aplica al estudio de indicadores económicos y financieros clave —como el mercado laboral, el comercio internacional, la actividad productiva y los mercados bursátiles— esta metodología proporciona elementos de juicio invaluables para formular estrategias que anticipen cambios futuros y optimicen la asignación de recursos (UNAD, 2024; Bertia, 2025).
+
+El índice COLCAP, principal referente del mercado accionario colombiano, constituye un caso de estudio paradigmático de la relevancia de las series temporales en la realidad económica nacional (INCP, 2024; Ministerio de Hacienda, 2025). Durante la última década, este índice ha experimentado transformaciones dramáticas que reflejan los ciclos de la economía colombiana: desde la crisis de 2015 provocada por la caída de precios del petróleo, pasando por el impacto devastador de la pandemia COVID-19 en 2020, hasta el rally histórico de 2025 que lo posicionó como el índice de mayor rendimiento en América Latina, superando por primera vez los 2.000 puntos (INCP, 2024; Ministerio de Hacienda, 2025; EAFIT, 2024). Comprender la trayectoria temporal del COLCAP no es únicamente un ejercicio académico: sus movimientos capturan la confianza de inversionistas locales e internacionales, reflejan la salud macroeconómica del país y comunican señales críticas sobre la viabilidad de las políticas económicas adoptadas (Ministerio de Hacienda, 2025; Colombia Chamber, 2025).
+
+La importancia estratégica de predecir el comportamiento del COLCAP radica en múltiples dimensiones. Para inversionistas y fondos de capital, la capacidad de proyectar las trayectorias futuras del índice permite optimizar portafolios, identificar oportunidades de compra en valles de volatilidad y protegerse contra potenciales caídas (García, 2013; EAFIT, 2024). Para analistas financieros y formuladores de política pública, los modelos predictivos basados en series temporales revelan la relación entre variables macroeconómicas —como la inflación, las tasas de interés, el tipo de cambio y el riesgo país— y el desempeño bursátil, facilitando la formulación de políticas coherentes con los objetivos de estabilidad y crecimiento (Osorio, 2024; Universidad del Rosario, 2021). Asimismo, para las empresas listadas en bolsa, comprender cómo evoluciona su representación en el índice a través del tiempo permite identificar períodos de sobre o subvaloración, así como alinear estrategias corporativas con ciclos de mercado previsibles (García, 2013; EAFIT, 2024).
+
+Este trabajo se propone analizar la serie temporal del índice COLCAP durante el período 2015-2025, identificando los patrones, ciclos y determinantes que explican su evolución, y desarrollando modelos predictivos que permitan proyectar su comportamiento futuro. Al combinar el análisis retrospectivo con ejercicios de pronóstico, se busca demostrar que las técnicas de series temporales no solo capturan la complejidad no lineal de los mercados financieros, sino que también generan insumos valiosos para la toma de decisiones informadas en contextos de incertidumbre (Osorio, 2024; Universidad del Rosario, 2021). La investigación contribuye así a cerrar una brecha entre la teoría de análisis temporal y su aplicación práctica al mercado de capitales colombiano, proporcionando marcos metodológicos replicables para otros indicadores y contextos económicos emergentes (García, 2013; EAFIT, 2024).
+
+:::
+
+# Metodologia
+
+## Serie de tiempo
+
+Una serie de tiempo es una secuencia de observaciones de una variable específica registradas en intervalos de tiempo regulares y ordenadas cronológicamente (Box & Jenkins, 1970; Wikipedia, 2007). Estas observaciones pueden estar espaciadas en forma mensual, trimestral, semanal o diaria, dependiendo del fenómeno bajo estudio (Wikipedia, 2007). En el contexto financiero y económico, las series de tiempo permiten analizar el comportamiento histórico de variables como precios de acciones, índices bursátiles, tipos de cambio e indicadores macroeconómicos, con el objetivo de identificar patrones subyacentes y realizar pronósticos sobre su evolución futura (DataCamp, 2024).
+
+El análisis de series temporales se fundamenta en el estudio de diferentes componentes que caracterizan el comportamiento de los datos a través del tiempo. La **tendencia** representa el patrón de largo plazo que muestra la dirección general de la serie, ya sea creciente, decreciente o constante. La **estacionalidad** corresponde a fluctuaciones periódicas que se repiten en intervalos fijos de tiempo, como cambios mensuales o trimestrales provocados por factores cíclicos. El componente **cíclico** refleja oscilaciones de largo plazo que no tienen un período fijo y suelen estar relacionadas con ciclos económicos. Finalmente, el componente **aleatorio** o residual representa la variabilidad inexplicable que permanece después de eliminar los otros componentes.
+
+La importancia del análisis de series de tiempo radica en su capacidad para extraer información representativa sobre las relaciones subyacentes entre los datos, permitiendo realizar predicciones sobre momentos no observados, ya sea en el futuro (pronósticos), en el pasado (extrapolación retrógrada) o en momentos intermedios (interpolación) (Wikipedia, 2007). En el ámbito financiero, estas predicciones son fundamentales para la toma de decisiones estratégicas, la gestión de riesgos y la planificación de inversiones (DataCamp, 2024).
+
+## Modelo ARIMA
+
+El modelo ARIMA (AutoRegressive Integrated Moving Average) es una de las herramientas estadísticas más utilizadas y versátiles para el análisis y pronóstico de series temporales (DataCamp, 2024). Este modelo combina tres componentes fundamentales que trabajan de manera conjunta para capturar la estructura de dependencia temporal de los datos (DataCamp, 2024). El componente **Autorregresivo (AR)** establece que el valor actual de la serie puede ser explicado como una función lineal de sus valores pasados, es decir, la variable en el momento t depende de sus valores en momentos anteriores (DataCamp, 2024). El componente **Integrado (I)** se refiere al proceso de diferenciación aplicado a la serie para lograr estacionariedad, removiendo tendencias y componentes no estacionarios (DataCamp, 2024). El componente **Media Móvil (MA)** modela la dependencia entre una observación y los errores de pronóstico de observaciones pasadas (DataCamp, 2024).
+
+La notación del modelo ARIMA se expresa como ARIMA(p,d,q), donde p representa el orden del componente autorregresivo, d indica el número de diferenciaciones necesarias para alcanzar la estacionariedad, y q denota el orden del componente de medias móviles (DataCamp, 2024). Un modelo ARIMA(3,1,0), por ejemplo, indica que se utiliza un proceso autorregresivo de orden 3, con una diferenciación aplicada y sin componente de medias móviles (Otexts, s.f.).
+
+La importancia de los modelos ARIMA en la predicción de series temporales radica en múltiples aspectos (DataCamp, 2024). Primero, proporcionan un marco teórico sólido basado en la teoría de procesos estocásticos que permite describir las autocorrelaciones presentes en los datos (Otexts, s.f.). Segundo, son especialmente efectivos para capturar patrones complejos de dependencia temporal, incluyendo inercias y efectos de retardo que caracterizan muchas variables económicas y financieras (DataCamp, 2024). Tercero, ofrecen flexibilidad para adaptarse a diferentes tipos de series mediante la selección apropiada de sus parámetros (DataCamp, 2024).
+
+En el contexto financiero, los modelos ARIMA han demostrado ser herramientas valiosas para predecir precios de acciones, índices bursátiles, tipos de cambio y rendimientos de portafolios (DataCamp, 2024). Su capacidad para manejar series temporales que exhiben autocorrelación compleja y para incorporar la diferenciación cuando existe no estacionariedad los hace ideales para el análisis de mercados financieros caracterizados por alta volatilidad (DataCamp, 2024). Además, los pronósticos generados por ARIMA permiten a los inversionistas y analistas anticipar tendencias futuras, identificar oportunidades de inversión y gestionar riesgos de manera más informada (DataCamp, 2024).
+
+## Metodología de Box-Jenkins
+
+La estimación de modelos ARIMA se realiza tradicionalmente mediante la metodología de Box-Jenkins, un procedimiento sistemático e iterativo que consta de cuatro etapas fundamentales (Box & Jenkins, 1970; Wikipedia, 2013). Esta metodología, desarrollada por los estadísticos George E.P. Box y Gwilym Jenkins, proporciona un enfoque estructurado para identificar, estimar y validar el modelo más apropiado para una serie temporal específica (Wikipedia, 2013).
+
+### Primera Etapa: Identificación del Modelo
+
+La primera etapa corresponde a la identificación del modelo (Wikipedia, 2013). En esta fase inicial se debe asegurar que la serie sea **estacionaria**, es decir, que sus propiedades estadísticas como la media, varianza y autocorrelación se mantengan constantes a través del tiempo (NumXL, 2024; Wikipedia, 2013). Para verificar la estacionariedad, se aplica la **prueba de Dickey-Fuller Aumentada (ADF)**, cuya hipótesis nula establece que la serie posee una raíz unitaria y por tanto no es estacionaria (NumXL, 2024).
+
+La prueba ADF formula la siguiente hipótesis:
+
+- $H₀$: La serie tiene raíz unitaria (no es estacionaria)
+- $H₁$: La serie no tiene raíz unitaria (es estacionaria)
+
+Si la prueba ADF arroja un p-valor inferior al nivel de significancia (típicamente 0.05), se rechaza la hipótesis nula y se concluye que la serie es estacionaria (NumXL, 2024).
+
+Cuando la serie original no es estacionaria, se aplica el proceso de **diferenciación**, que consiste en calcular la diferencia entre observaciones consecutivas (Wikipedia, 2013). La diferenciación de primer orden elimina tendencias lineales, mientras que diferenciaciones de orden superior pueden remover tendencias polinomiales más complejas (Wikipedia, 2013). Para series con componente estacional, se puede aplicar diferenciación estacional además de la regular (Wikipedia, 2013). Una vez alcanzada la estacionariedad, se procede a identificar los órdenes p y q del modelo mediante el análisis de las funciones de autocorrelación (ACF) y autocorrelación parcial (PACF) (Wikipedia, 2013).
+
+La **función de autocorrelación (ACF)** mide la correlación entre las observaciones de una serie temporal separadas por k períodos, proporcionando información sobre la estructura de dependencia temporal (Wikipedia, 2013). La **función de autocorrelación parcial (PACF)** mide la correlación entre observaciones separadas por k períodos después de ajustar por la influencia de los rezagos intermedios (Wikipedia, 2013). En términos prácticos, patrones específicos en la ACF y PACF sugieren diferentes especificaciones del modelo (Wikipedia, 2013):
+
+- Un **decaimiento exponencial en la ACF** junto con **cortes abruptos en la PACF** sugiere un modelo AR
+- El patrón inverso (cortes abruptos en ACF y decaimiento en PACF) indica un modelo MA
+- Patrones decrecientes en ambas funciones indican un modelo ARMA
+
+### Segunda Etapa: Estimación de Parámetros
+
+La segunda etapa es la **estimación de parámetros** (Wikipedia, 2013). Una vez identificado el modelo tentativo, se procede a estimar los coeficientes autorregresivos y de medias móviles mediante el método de **máxima verosimilitud** (Wikipedia, 2013). Este método encuentra los valores de los parámetros que maximizan la probabilidad de observar los datos disponibles (NumXL, 2024). Los programas estadísticos modernos utilizan algoritmos de optimización numérica para obtener estas estimaciones junto con sus errores estándar y estadísticos de significancia (Wikipedia, 2013).
+
+### Tercera Etapa: Diagnóstico y Validación del Modelo
+
+La tercera etapa corresponde al **diagnóstico y validación del modelo** (Wikipedia, 2013). Esta fase crítica determina si el modelo estimado es adecuado para describir los datos y realizar pronósticos (Wikipedia, 2013). La validación involucra varios aspectos fundamentales (Wikipedia, 2013):
+
+Primero, se verifica la **significancia estadística de los parámetros** estimados mediante pruebas t, asegurando que todos los coeficientes sean estadísticamente diferentes de cero (Wikipedia, 2013). Segundo, se comprueba que los parámetros cumplan las condiciones de estacionariedad para la parte AR y de invertibilidad para la parte MA (Wikipedia, 2013).
+
+El **análisis de los residuales** constituye un elemento central en la validación del modelo (Wikipedia, 2013). Los residuales deben comportarse como **ruido blanco**, es decir, deben ser independientes entre sí, tener media cero, varianza constante y seguir una distribución normal (Wikipedia, 2013). Para verificar la independencia de los residuales se aplica la **prueba de Ljung-Box**, que evalúa de forma conjunta si existe autocorrelación significativa en los residuos (Wikipedia, 2014). La hipótesis nula de esta prueba establece que los residuos son independientes y no están correlacionados, mientras que la hipótesis alternativa indica que exhiben autocorrelación (Wikipedia, 2014). Si el p-valor de la prueba Ljung-Box es mayor al nivel de significancia (típicamente 0.05), no se rechaza la hipótesis nula y se concluye que los residuos son ruido blanco, validando la adecuación del modelo (Wikipedia, 2014).
+
+Para comparar modelos alternativos y seleccionar el más apropiado, se utilizan **criterios de información** como el AIC (Criterio de Información de Akaike), AICc (AIC corregido) y BIC (Criterio de Información Bayesiano) (Wikipedia, 2013). Estos criterios evalúan la bondad de ajuste del modelo considerando tanto la verosimilitud de los datos como la complejidad del modelo, aplicando una penalización por el número de parámetros para evitar el sobreajuste (Wikipedia, 2013). El modelo óptimo es aquel que minimiza el valor del criterio de información seleccionado (Wikipedia, 2013). El AICc es preferible cuando el tamaño de la muestra es pequeño en relación con el número de parámetros, mientras que el BIC tiende a seleccionar modelos más parsimoniosos (Wikipedia, 2013).
+
+### Cuarta Etapa: Predicción o Pronóstico
+
+La cuarta etapa es la **predicción o pronóstico** (Wikipedia, 2013). Una vez que se ha identificado, estimado y validado un modelo apropiado, se utiliza para generar pronósticos de valores futuros de la serie (Wikipedia, 2013). Los modelos ARIMA proporcionan pronósticos puntuales junto con intervalos de confianza que cuantifican la incertidumbre asociada a las predicciones (DataCamp, 2024). La amplitud de estos intervalos de confianza aumenta conforme se incrementa el horizonte de pronóstico, reflejando la mayor incertidumbre sobre valores más distantes en el futuro (DataCamp, 2024).
+
+Esta metodología iterativa permite refinar sucesivamente el modelo hasta obtener una especificación que capture adecuadamente la estructura de dependencia temporal de los datos, proporcione residuales que satisfagan los supuestos requeridos y genere pronósticos confiables para la toma de decisiones (Wikipedia, 2013).
+
+
+
+
+# Descripcion de la serie temporal
+
+
+# Resultados del modelo ARIMA
+
+# Concluciones 
+
+::: academic-footer
+**Universidad del Valle** \| *Facultad de ingenieria* \| Gestion de datos
+:::
+
