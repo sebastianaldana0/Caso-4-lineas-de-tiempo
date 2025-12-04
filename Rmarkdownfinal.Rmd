@@ -1,21 +1,23 @@
 ---
-title: "Aplicación de Algoritmos de Machine Learning para la Evaluación del Riesgo Crediticio en Leading Club"
+title: "Análisis predictivo del fondo bursátil basado MSCI COLCAP, mediante el uso de tecnicas de autoregresión para series de tiempo: Modelo ARIMA"
 subtitle: "Aguirre Aldana Joan Sebastian, Moreno Tamayo Jose Americo"
-author: "Aguirre Aldana Joan Sebastian, Moreno Tamayo Jose Americo"
+author: ""
 date: "`r format(Sys.Date(), '%d %B %Y')`"
 output:
-  xaringan::moon_reader:
-    css: [default, metropolis, metropolis-fonts, animate.css, sebastian-xaringan.css]
-    lib_dir: libs
-    nature:
-      ratio: '16:9'
-      highlightStyle: github
-      highlightLines: true
-      countIncrementalSlides: false
-      slideNumberFormat: "%current% / %total%"
-      beforeInit: "https://platform.twitter.com/widgets.js"
-      toc: true
-      tocDepth: 3
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: tango
+    toc: true
+    toc_depth: 4
+    number_sections: true
+    fig_width: 8
+    fig_height: 5
+    fig_caption: true
+    dev: "png"
+    keep_md: false
+    self_contained: true
+    css: Sebastian-styles.css
+    code_folding: none
 editor_options: 
   markdown: 
     wrap: sentence
@@ -56,579 +58,2229 @@ library(plotly)
 library(gganimate)
 library(xaringan)
 library(xaringanthemer)
+library(xts)
+library(readxl)
+library(fpp2)
+library(tseries)
 ```
 
-
-```{css Tema, include=FALSE}
-/* Sebastian-xaringan.css - Diseño Animado y Futurista */
-
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
-
-:root {
-  --primary: #6366F1;
-  --primary-dark: #4338CA;
-  --primary-light: #818CF8;
-  --secondary: #06D6A0;
-  --secondary-dark: #05B384;
-  --accent: #FF6B6B;
-  --accent-dark: #FF5252;
-  --dark: #0F172A;
-  --dark-medium: #1E293B;
-  --light: #F8FAFC;
-  --gray: #64748B;
-  --neon-blue: #00F5FF;
-  --neon-purple: #A855F7;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Exo 2', sans-serif;
-  font-weight: 400;
-  line-height: 1.6;
-  color: var(--light);
-  background: linear-gradient(135deg, var(--dark) 0%, var(--dark-medium) 100%);
-  overflow-x: hidden;
-}
-
-/* ANIMACIONES GLOBALES */
-.remark-slide-content {
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(6, 214, 160, 0.1) 0%, transparent 50%),
-    linear-gradient(135deg, var(--dark) 0%, var(--dark-medium) 100%);
-  padding: 1em 4em 1em 4em;
-  position: relative;
-  overflow: hidden;
-}
-
-.remark-slide-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(99,102,241,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-  opacity: 0.3;
-  z-index: 0;
-}
-
-/* PORTADA ANIMADA */
-.title-slide {
-  background: 
-    linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%),
-    url('Portada2.jpg') !important;
-  background-size: cover !important;
-  background-position: center !important;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.title-slide::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent 45%, var(--neon-blue) 50%, transparent 55%);
-  animation: shine 3s infinite linear;
-  z-index: 1;
-}
-
-@keyframes shine {
-  0% { transform: rotate(0deg) translateX(-100px) rotate(0deg); }
-  100% { transform: rotate(360deg) translateX(-100px) rotate(-360deg); }
-}
-
-.title-slide h1 {
-  font-family: 'Orbitron', monospace;
-  font-size: 3.5em;
-  font-weight: 900;
-  color: var(--light);
-  text-shadow: 
-    0 0 10px var(--primary),
-    0 0 20px var(--primary),
-    0 0 30px var(--primary);
-  margin-bottom: 0.5em;
-  position: relative;
-  z-index: 2;
-  animation: titleGlow 2s ease-in-out infinite alternate;
-}
-
-@keyframes titleGlow {
-  from {
-    text-shadow: 
-      0 0 10px var(--primary),
-      0 0 20px var(--primary),
-      0 0 30px var(--primary);
-  }
-  to {
-    text-shadow: 
-      0 0 15px var(--primary-light),
-      0 0 25px var(--primary-light),
-      0 0 35px var(--primary-light);
-  }
-}
-
-.title-slide h2 {
-  font-family: 'Exo 2', sans-serif;
-  font-size: 1.8em;
-  color: var(--secondary);
-  margin-bottom: 1em;
-  position: relative;
-  z-index: 2;
-  animation: fadeInUp 1s ease-out;
-}
-
-.title-slide h3 {
-  font-family: 'Exo 2', sans-serif;
-  font-size: 1.3em;
-  color: var(--light);
-  position: relative;
-  z-index: 2;
-  animation: fadeInUp 1s ease-out 0.5s both;
-}
-
-.title-slide .date {
-  font-family: 'Roboto Mono', monospace;
-  color: var(--gray);
-  position: relative;
-  z-index: 2;
-  animation: fadeInUp 1s ease-out 1s both;
-}
-
-/* ANIMACIONES DE TEXTO */
-h1, h2, h3 {
-  font-family: 'Orbitron', monospace;
-  color: var(--light) !important;
-  margin-top: 0;
-  position: relative;
-}
-
-h1 {
-  font-size: 2.5em;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.5em;
-  animation: slideInLeft 0.8s ease-out;
-}
-
-h2 {
-  font-size: 2em;
-  color: var(--secondary) !important;
-  border-left: 4px solid var(--secondary);
-  padding-left: 0.5em;
-  margin-bottom: 0.5em;
-  animation: slideInRight 0.8s ease-out;
-}
-
-h3 {
-  font-size: 1.5em;
-  color: var(--primary-light) !important;
-  margin-bottom: 0.5em;
-  animation: fadeInUp 0.8s ease-out;
-}
-
-/* ANIMACIONES CSS */
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-100px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* CONTENIDO ANIMADO */
-.remark-slide-content p, .remark-slide-content ul, .remark-slide-content ol {
-  font-size: 1.1em;
-  line-height: 1.6;
-  color: var(--light);
-  animation: fadeInUp 0.8s ease-out;
-}
-
-.remark-slide-content ul, .remark-slide-content ol {
-  margin-left: 1.5em;
-}
-
-.remark-slide-content li {
-  margin-bottom: 0.5em;
-  animation: fadeInUp 0.8s ease-out;
-  animation-fill-mode: both;
-}
-
-.remark-slide-content li:nth-child(1) { animation-delay: 0.1s; }
-.remark-slide-content li:nth-child(2) { animation-delay: 0.2s; }
-.remark-slide-content li:nth-child(3) { animation-delay: 0.3s; }
-.remark-slide-content li:nth-child(4) { animation-delay: 0.4s; }
-.remark-slide-content li:nth-child(5) { animation-delay: 0.5s; }
-
-/* BLOQUES DE CÓDIGO ANIMADOS */
-.remark-code {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.9em;
-  background: var(--dark-medium) !important;
-  border: 1px solid var(--primary);
-  border-radius: 8px;
-  padding: 1em !important;
-  box-shadow: 
-    0 0 20px rgba(99, 102, 241, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  animation: codePulse 2s infinite alternate;
-}
-
-@keyframes codePulse {
-  from {
-    box-shadow: 
-      0 0 20px rgba(99, 102, 241, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  }
-  to {
-    box-shadow: 
-      0 0 30px rgba(99, 102, 241, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  }
-}
-
-.remark-inline-code {
-  background: rgba(99, 102, 241, 0.2);
-  color: var(--primary-light);
-  padding: 0.2em 0.4em;
-  border-radius: 4px;
-  font-family: 'Roboto Mono', monospace;
-  animation: blink 2s infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* TABLAS ANIMADAS */
-.remark-slide-content table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin: 1em 0;
-  background: var(--dark-medium);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  animation: tableSlide 0.8s ease-out;
-}
-
-@keyframes tableSlide {
-  from {
-    transform: translateY(50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.remark-slide-content th {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: white;
-  padding: 1em;
-  text-align: left;
-  font-family: 'Orbitron', monospace;
-  font-weight: 500;
-  position: relative;
-  overflow: hidden;
-}
-
-.remark-slide-content th::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
-.remark-slide-content td {
-  padding: 0.8em 1em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.remark-slide-content tr:hover td {
-  background: rgba(99, 102, 241, 0.1);
-  transform: translateX(5px);
-}
-
-/* BOTONES Y ELEMENTOS INTERACTIVOS */
-.slide-button {
-  display: inline-block;
-  padding: 0.8em 1.5em;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  color: white;
-  text-decoration: none;
-  border-radius: 25px;
-  font-family: 'Exo 2', sans-serif;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.slide-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
-}
-
-/* ELEMENTOS DE REALCE */
-.highlight-box {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(6, 214, 160, 0.1) 100%);
-  border: 1px solid var(--primary);
-  border-radius: 12px;
-  padding: 1.5em;
-  margin: 1em 0;
-  position: relative;
-  overflow: hidden;
-  animation: highlightGlow 3s infinite alternate;
-}
-
-@keyframes highlightGlow {
-  from {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
-  }
-  to {
-    box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
-  }
-}
-
-/* FOOTER ANIMADO */
-.remark-slide-number {
-  font-family: 'Roboto Mono', monospace;
-  color: var(--gray) !important;
-  opacity: 0.7;
-  font-size: 0.8em;
-  animation: fadeIn 1s ease-out 2s both;
-}
-
-/* EFECTOS DE PARTÍCULAS (pseudo-elementos) */
-.particle {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: var(--neon-blue);
-  border-radius: 50%;
-  animation: float 6s infinite linear;
-  opacity: 0.3;
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(100vh) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.3;
-  }
-  90% {
-    opacity: 0.3;
-  }
-  100% {
-    transform: translateY(-100px) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .remark-slide-content {
-    padding: 1em 2em;
-  }
-  
-  .title-slide h1 {
-    font-size: 2.5em;
-  }
-  
-  .title-slide h2 {
-    font-size: 1.3em;
-  }
-}
-
-/* CLASES UTILITARIAS PARA ANIMACIONES */
-.animate-pop { animation: popIn 0.6s ease-out; }
-.animate-bounce { animation: bounce 2s infinite; }
-.animate-rotate { animation: rotate 4s linear infinite; }
-.animate-fade { animation: fadeIn 1s ease-out; }
-
-@keyframes popIn {
-  0% { transform: scale(0.5); opacity: 0; }
-  70% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* BARRA DE PROGRESO */
-.progress-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-  width: 0%;
-  z-index: 1000;
-  transition: width 0.3s ease;
-}
-
-
-```
 
 # Introducción {.page-header}
 
 ::: academic-card
-El mercado de valores colombiano ha experimentado transformaciones significativas durante la última década, reflejadas en el comportamiento del índice COLCAP, principal referente del mercado accionario del país. Este índice de capitalización bursátil, que agrupa las 20 acciones más líquidas de la Bolsa de Valores de Colombia (BVC), constituye un termómetro fundamental para medir la salud económica nacional y la confianza de los inversionistas tanto locales como internacionales.​
+El mercado de valores colombiano ha experimentado transformaciones significativas durante la última década, reflejadas en el comportamiento del índice COLCAP, principal referente del mercado accionario del país.
+Este índice de capitalización bursátil, que agrupa las 20 acciones más líquidas de la Bolsa de Valores de Colombia (BVC), constituye un termómetro fundamental para medir la salud económica nacional y la confianza de los inversionistas tanto locales como internacionales.​
 
-El presente trabajo se enfoca en el análisis del índice COLCAP durante el período comprendido entre 2015 y 2025, una década caracterizada por eventos económicos, políticos y sanitarios de gran envergadura que han moldeado el desempeño del mercado bursátil colombiano. Esta ventana temporal es particularmente relevante, ya que abarca desde la crisis de precios del petróleo en 2015, pasando por la pandemia del COVID-19 en 2020, hasta la recuperación histórica registrada en 2025, cuando el índice alcanzó máximos nunca antes vistos.
+El índice COLCAP fue creado en enero de 2008 con un valor inicial de 1.000 puntos y reemplazó al Índice General de la Bolsa de Valores de Colombia (IGBC) como principal indicador bursátil en noviembre de 2013 (Rankia, 2024; Tyba, 2023).
+Su metodología de cálculo se basa en la capitalización bursátil ajustada por flotante, lo que significa que cada acción se pondera según su valor de mercado disponible para negociación, sin considerar las acciones en poder de inversionistas con interés de control (Citibank, 2024; Studocu, 2022).
+Desde mayo de 2021, la firma internacional MSCI Inc. asumió la construcción, cálculo y mantenimiento del índice, denominándolo MSCI COLCAP, lo que le otorgó estándares internacionales y mayor credibilidad ante inversionistas globales (Studocu, 2022; S&P Global, 2024).
 
-El índice COLCAP fue creado en enero de 2008 con un valor inicial de 1.000 puntos y reemplazó al Índice General de la Bolsa de Valores de Colombia (IGBC) como principal indicador bursátil en noviembre de 2013 (Rankia, 2024; Tyba, 2023). Su metodología de cálculo se basa en la capitalización bursátil ajustada por flotante, lo que significa que cada acción se pondera según su valor de mercado disponible para negociación, sin considerar las acciones en poder de inversionistas con interés de control (Citibank, 2024; Studocu, 2022). Desde mayo de 2021, la firma internacional MSCI Inc. asumió la construcción, cálculo y mantenimiento del índice, denominándolo MSCI COLCAP, lo que le otorgó estándares internacionales y mayor credibilidad ante inversionistas globales (Studocu, 2022; S&P Global, 2024).
+En un contexto de economía global cada vez más integrada e incierta, la capacidad de anticipar y comprender el comportamiento de los indicadores financieros es fundamental para la toma de decisiones estratégicas en niveles tanto empresarial como institucional (Concur, 2022; EAFIT, 2013).
 
-En un contexto de economía global cada vez más integrada e incierta, la capacidad de anticipar y comprender el comportamiento de los indicadores financieros es fundamental para la toma de decisiones estratégicas en niveles tanto empresarial como institucional (Concur, 2022; EAFIT, 2013). El análisis de series temporales emerge como una herramienta analítica poderosa que transforma datos históricos en horizontes de predicción, permitiendo identificar patrones, ciclos y tendencias que permanecen ocultos a simple vista (Mathworks, 2025; Galaksiya, 2024). En particular, cuando se aplica al estudio de indicadores económicos y financieros clave —como el mercado laboral, el comercio internacional, la actividad productiva y los mercados bursátiles— esta metodología proporciona elementos de juicio invaluables para formular estrategias que anticipen cambios futuros y optimicen la asignación de recursos (UNAD, 2024; Bertia, 2025).
+El análisis de series temporales emerge como una herramienta analítica poderosa que transforma datos históricos en horizontes de predicción, permitiendo identificar patrones, ciclos y tendencias que permanecen ocultos a simple vista (Mathworks, 2025; Galaksiya, 2024).
 
-El índice COLCAP, principal referente del mercado accionario colombiano, constituye un caso de estudio paradigmático de la relevancia de las series temporales en la realidad económica nacional (INCP, 2024; Ministerio de Hacienda, 2025). Durante la última década, este índice ha experimentado transformaciones dramáticas que reflejan los ciclos de la economía colombiana: desde la crisis de 2015 provocada por la caída de precios del petróleo, pasando por el impacto devastador de la pandemia COVID-19 en 2020, hasta el rally histórico de 2025 que lo posicionó como el índice de mayor rendimiento en América Latina, superando por primera vez los 2.000 puntos (INCP, 2024; Ministerio de Hacienda, 2025; EAFIT, 2024). Comprender la trayectoria temporal del COLCAP no es únicamente un ejercicio académico: sus movimientos capturan la confianza de inversionistas locales e internacionales, reflejan la salud macroeconómica del país y comunican señales críticas sobre la viabilidad de las políticas económicas adoptadas (Ministerio de Hacienda, 2025; Colombia Chamber, 2025).
+En particular, cuando se aplica al estudio de indicadores económicos y financieros clave —como el mercado laboral, el comercio internacional, la actividad productiva y los mercados bursátiles— esta metodología proporciona elementos de juicio invaluables para formular estrategias que anticipen cambios futuros y optimicen la asignación de recursos (UNAD, 2024; Bertia, 2025).
 
-La importancia estratégica de predecir el comportamiento del COLCAP radica en múltiples dimensiones. Para inversionistas y fondos de capital, la capacidad de proyectar las trayectorias futuras del índice permite optimizar portafolios, identificar oportunidades de compra en valles de volatilidad y protegerse contra potenciales caídas (García, 2013; EAFIT, 2024). Para analistas financieros y formuladores de política pública, los modelos predictivos basados en series temporales revelan la relación entre variables macroeconómicas —como la inflación, las tasas de interés, el tipo de cambio y el riesgo país— y el desempeño bursátil, facilitando la formulación de políticas coherentes con los objetivos de estabilidad y crecimiento (Osorio, 2024; Universidad del Rosario, 2021). Asimismo, para las empresas listadas en bolsa, comprender cómo evoluciona su representación en el índice a través del tiempo permite identificar períodos de sobre o subvaloración, así como alinear estrategias corporativas con ciclos de mercado previsibles (García, 2013; EAFIT, 2024).
+El índice COLCAP, principal referente del mercado accionario colombiano, constituye un caso de estudio paradigmático de la relevancia de las series temporales en la realidad económica nacional (INCP, 2024; Ministerio de Hacienda, 2025).
+Durante la última década, este índice ha experimentado transformaciones dramáticas que reflejan los ciclos de la economía colombiana: desde la crisis de 2015 provocada por la caída de precios del petróleo, pasando por el impacto devastador de la pandemia COVID-19 en 2020, hasta el rally histórico de 2025 que lo posicionó como el índice de mayor rendimiento en América Latina, superando por primera vez los 2.000 puntos (INCP, 2024; Ministerio de Hacienda, 2025; EAFIT, 2024).
 
-Este trabajo se propone analizar la serie temporal del índice COLCAP durante el período 2015-2025, identificando los patrones, ciclos y determinantes que explican su evolución, y desarrollando modelos predictivos que permitan proyectar su comportamiento futuro. Al combinar el análisis retrospectivo con ejercicios de pronóstico, se busca demostrar que las técnicas de series temporales no solo capturan la complejidad no lineal de los mercados financieros, sino que también generan insumos valiosos para la toma de decisiones informadas en contextos de incertidumbre (Osorio, 2024; Universidad del Rosario, 2021). La investigación contribuye así a cerrar una brecha entre la teoría de análisis temporal y su aplicación práctica al mercado de capitales colombiano, proporcionando marcos metodológicos replicables para otros indicadores y contextos económicos emergentes (García, 2013; EAFIT, 2024).
+Comprender la trayectoria temporal del COLCAP no es únicamente un ejercicio académico: sus movimientos capturan la confianza de inversionistas locales e internacionales, reflejan la salud macroeconómica del país y comunican señales críticas sobre la viabilidad de las políticas económicas adoptadas (Ministerio de Hacienda, 2025; Colombia Chamber, 2025).
 
+La importancia estratégica de predecir el comportamiento del COLCAP radica en múltiples dimensiones.
+Para inversionistas y fondos de capital, la capacidad de proyectar las trayectorias futuras del índice permite optimizar portafolios, identificar oportunidades de compra en valles de volatilidad y protegerse contra potenciales caídas (García, 2013; EAFIT, 2024).
+Para analistas financieros y formuladores de política pública, los modelos predictivos basados en series temporales revelan la relación entre variables macroeconómicas —como la inflación, las tasas de interés, el tipo de cambio y el riesgo país— y el desempeño bursátil, facilitando la formulación de políticas coherentes con los objetivos de estabilidad y crecimiento (Osorio, 2024; Universidad del Rosario, 2021).
+Asimismo, para las empresas listadas en bolsa, comprender cómo evoluciona su representación en el índice a través del tiempo permite identificar períodos de sobre o subvaloración, así como alinear estrategias corporativas con ciclos de mercado previsibles (García, 2013; EAFIT, 2024).
+
+Este trabajo se propone analizar la serie temporal del índice COLCAP durante el período 2015-2025, identificando los patrones, ciclos y determinantes que explican su evolución, y desarrollando modelos predictivos que permitan proyectar su comportamiento futuro.
+Al combinar el análisis retrospectivo con ejercicios de pronóstico, se busca demostrar que las técnicas de series temporales no solo capturan la complejidad no lineal de los mercados financieros, sino que también generan insumos valiosos para la toma de decisiones informadas en contextos de incertidumbre (Osorio, 2024; Universidad del Rosario, 2021).
+La investigación contribuye así a cerrar una brecha entre la teoría de análisis temporal y su aplicación práctica al mercado de capitales colombiano, proporcionando marcos metodológicos replicables para otros indicadores y contextos económicos emergentes (García, 2013; EAFIT, 2024).
 :::
 
 # Metodologia
 
 ## Serie de tiempo
 
-Una serie de tiempo es una secuencia de observaciones de una variable específica registradas en intervalos de tiempo regulares y ordenadas cronológicamente (Box & Jenkins, 1970; Wikipedia, 2007). Estas observaciones pueden estar espaciadas en forma mensual, trimestral, semanal o diaria, dependiendo del fenómeno bajo estudio (Wikipedia, 2007). En el contexto financiero y económico, las series de tiempo permiten analizar el comportamiento histórico de variables como precios de acciones, índices bursátiles, tipos de cambio e indicadores macroeconómicos, con el objetivo de identificar patrones subyacentes y realizar pronósticos sobre su evolución futura (DataCamp, 2024).
+Una serie de tiempo es una secuencia de observaciones de una variable específica registradas en intervalos de tiempo regulares y ordenadas cronológicamente (Box & Jenkins, 1970)
+Estas observaciones pueden estar espaciadas en forma mensual, trimestral, semanal o diaria, dependiendo del fenómeno bajo estudio.
+En el contexto financiero y económico, las series de tiempo permiten analizar el comportamiento histórico de variables como precios de acciones, índices bursátiles, tipos de cambio e indicadores macroeconómicos, con el objetivo de identificar patrones subyacentes y realizar pronósticos sobre su evolución futura (DataCamp, 2024).
 
-El análisis de series temporales se fundamenta en el estudio de diferentes componentes que caracterizan el comportamiento de los datos a través del tiempo. La **tendencia** representa el patrón de largo plazo que muestra la dirección general de la serie, ya sea creciente, decreciente o constante. La **estacionalidad** corresponde a fluctuaciones periódicas que se repiten en intervalos fijos de tiempo, como cambios mensuales o trimestrales provocados por factores cíclicos. El componente **cíclico** refleja oscilaciones de largo plazo que no tienen un período fijo y suelen estar relacionadas con ciclos económicos. Finalmente, el componente **aleatorio** o residual representa la variabilidad inexplicable que permanece después de eliminar los otros componentes.
+El análisis de series temporales se fundamenta en el estudio de diferentes componentes que caracterizan el comportamiento de los datos a través del tiempo.
+La **tendencia** representa el patrón de largo plazo que muestra la dirección general de la serie, ya sea creciente, decreciente o constante.
+La **estacionalidad** corresponde a fluctuaciones periódicas que se repiten en intervalos fijos de tiempo, como cambios mensuales o trimestrales provocados por factores cíclicos.
+El componente **cíclico** refleja oscilaciones de largo plazo que no tienen un período fijo y suelen estar relacionadas con ciclos económicos.
+Finalmente, el componente **aleatorio** o residual representa la variabilidad inexplicable que permanece después de eliminar los otros componentes.
 
-La importancia del análisis de series de tiempo radica en su capacidad para extraer información representativa sobre las relaciones subyacentes entre los datos, permitiendo realizar predicciones sobre momentos no observados, ya sea en el futuro (pronósticos), en el pasado (extrapolación retrógrada) o en momentos intermedios (interpolación) (Wikipedia, 2007). En el ámbito financiero, estas predicciones son fundamentales para la toma de decisiones estratégicas, la gestión de riesgos y la planificación de inversiones (DataCamp, 2024).
+La importancia del análisis de series de tiempo radica en su capacidad para extraer información representativa sobre las relaciones subyacentes entre los datos, permitiendo realizar predicciones sobre momentos no observados, ya sea en el futuro (pronósticos), en el pasado (extrapolación retrógrada) o en momentos intermedios (interpolación).
+En el ámbito financiero, estas predicciones son fundamentales para la toma de decisiones estratégicas, la gestión de riesgos y la planificación de inversiones (DataCamp, 2024).
 
 ## Modelo ARIMA
 
-El modelo ARIMA (AutoRegressive Integrated Moving Average) es una de las herramientas estadísticas más utilizadas y versátiles para el análisis y pronóstico de series temporales (DataCamp, 2024). Este modelo combina tres componentes fundamentales que trabajan de manera conjunta para capturar la estructura de dependencia temporal de los datos (DataCamp, 2024). El componente **Autorregresivo (AR)** establece que el valor actual de la serie puede ser explicado como una función lineal de sus valores pasados, es decir, la variable en el momento t depende de sus valores en momentos anteriores (DataCamp, 2024). El componente **Integrado (I)** se refiere al proceso de diferenciación aplicado a la serie para lograr estacionariedad, removiendo tendencias y componentes no estacionarios (DataCamp, 2024). El componente **Media Móvil (MA)** modela la dependencia entre una observación y los errores de pronóstico de observaciones pasadas (DataCamp, 2024).
+El modelo ARIMA (AutoRegressive Integrated Moving Average) es una de las herramientas estadísticas más utilizadas y versátiles para el análisis y pronóstico de series temporales (DataCamp, 2024).
+Este modelo combina tres componentes fundamentales que trabajan de manera conjunta para capturar la estructura de dependencia temporal de los datos (DataCamp, 2024).
+El componente **Autorregresivo (AR)** establece que el valor actual de la serie puede ser explicado como una función lineal de sus valores pasados, es decir, la variable en el momento t depende de sus valores en momentos anteriores (DataCamp, 2024).
+El componente **Integrado (I)** se refiere al proceso de diferenciación aplicado a la serie para lograr estacionariedad, removiendo tendencias y componentes no estacionarios (DataCamp, 2024).
+El componente **Media Móvil (MA)** modela la dependencia entre una observación y los errores de pronóstico de observaciones pasadas (DataCamp, 2024).
 
-La notación del modelo ARIMA se expresa como ARIMA(p,d,q), donde p representa el orden del componente autorregresivo, d indica el número de diferenciaciones necesarias para alcanzar la estacionariedad, y q denota el orden del componente de medias móviles (DataCamp, 2024). Un modelo ARIMA(3,1,0), por ejemplo, indica que se utiliza un proceso autorregresivo de orden 3, con una diferenciación aplicada y sin componente de medias móviles (Otexts, s.f.).
+La notación del modelo ARIMA se expresa como ARIMA(p,d,q), donde p representa el orden del componente autorregresivo en la ecuacion 1 vemos AR(p):
 
-La importancia de los modelos ARIMA en la predicción de series temporales radica en múltiples aspectos (DataCamp, 2024). Primero, proporcionan un marco teórico sólido basado en la teoría de procesos estocásticos que permite describir las autocorrelaciones presentes en los datos (Otexts, s.f.). Segundo, son especialmente efectivos para capturar patrones complejos de dependencia temporal, incluyendo inercias y efectos de retardo que caracterizan muchas variables económicas y financieras (DataCamp, 2024). Tercero, ofrecen flexibilidad para adaptarse a diferentes tipos de series mediante la selección apropiada de sus parámetros (DataCamp, 2024).
+\[
+y_t = c + \phi_1 y_{t-1} + \phi_2 y_{t-2} + \ldots + \phi_p y_{t-p} + \varepsilon_t
+\tag{1}
+\]
 
-En el contexto financiero, los modelos ARIMA han demostrado ser herramientas valiosas para predecir precios de acciones, índices bursátiles, tipos de cambio y rendimientos de portafolios (DataCamp, 2024). Su capacidad para manejar series temporales que exhiben autocorrelación compleja y para incorporar la diferenciación cuando existe no estacionariedad los hace ideales para el análisis de mercados financieros caracterizados por alta volatilidad (DataCamp, 2024). Además, los pronósticos generados por ARIMA permiten a los inversionistas y analistas anticipar tendencias futuras, identificar oportunidades de inversión y gestionar riesgos de manera más informada (DataCamp, 2024).
+donde $\varepsilon_t$ es ruido blanco.
+
+
+d indica el número de diferenciaciones necesarias para alcanzar la estacionariedad, en la ecuacion 2 y 3 vemos dos ejemplos de diferenciacion $d=1$ y $d=2$:
+
+**Primera diferenciación ($d = 1$):**
+
+\[
+y'_t = y_t - y_{t-1}
+\tag{2}
+\]
+
+**Segunda diferenciación ($d = 2$):**
+
+\[
+y''_t = (y_t - y_{t-1}) - (y_{t-1} - y_{t-2}) = y_t - 2y_{t-1} + y_{t-2}
+\tag{3}
+\]
+
+
+y q denota el orden del componente de medias móviles en la ecuacion 3 vemos el modelo MA(q) (DataCamp, 2024).
+
+
+\[
+y_t = c + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \theta_2 \varepsilon_{t-2} + \ldots + \theta_q \varepsilon_{t-q}
+\tag{4}
+\]
+
+y el modelo ARMA($p, q$) general la vemos en la ecuación 5:
+
+\[
+y_t = c + \phi_1 y_{t-1} + \phi_2 y_{t-2} + \cdots + \phi_p y_{t-p} + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \theta_2 \varepsilon_{t-2} + \cdots + \theta_q \varepsilon_{t-q}
+\tag{5}
+\]
+
+
+
+Un modelo ARIMA(3,1,0), por ejemplo, indica que se utiliza un proceso autorregresivo de orden 3, con una diferenciación aplicada y sin componente de medias móviles (Otexts, s.f.).
+
+La importancia de los modelos ARIMA en la predicción de series temporales radica en múltiples aspectos (DataCamp, 2024).
+Primero, proporcionan un marco teórico sólido basado en la teoría de procesos estocásticos que permite describir las autocorrelaciones presentes en los datos (Otexts, s.f.).
+Segundo, son especialmente efectivos para capturar patrones complejos de dependencia temporal, incluyendo inercias y efectos de retardo que caracterizan muchas variables económicas y financieras (DataCamp, 2024).
+Tercero, ofrecen flexibilidad para adaptarse a diferentes tipos de series mediante la selección apropiada de sus parámetros (DataCamp, 2024).
+
+En el contexto financiero, los modelos ARIMA han demostrado ser herramientas valiosas para predecir precios de acciones, índices bursátiles, tipos de cambio y rendimientos de portafolios (DataCamp, 2024).
+Su capacidad para manejar series temporales que exhiben autocorrelación compleja y para incorporar la diferenciación cuando existe no estacionariedad los hace ideales para el análisis de mercados financieros caracterizados por alta volatilidad (DataCamp, 2024).
 
 ## Metodología de Box-Jenkins
 
-La estimación de modelos ARIMA se realiza tradicionalmente mediante la metodología de Box-Jenkins, un procedimiento sistemático e iterativo que consta de cuatro etapas fundamentales (Box & Jenkins, 1970; Wikipedia, 2013). Esta metodología, desarrollada por los estadísticos George E.P. Box y Gwilym Jenkins, proporciona un enfoque estructurado para identificar, estimar y validar el modelo más apropiado para una serie temporal específica (Wikipedia, 2013).
+La estimación de modelos ARIMA se realiza tradicionalmente mediante la metodología de Box-Jenkins, un procedimiento sistemático e iterativo que consta de cuatro etapas fundamentales (Box & Jenkins, 1970).
+Esta metodología, desarrollada por los estadísticos George E.P. Box y Gwilym Jenkins, proporciona un enfoque estructurado para identificar, estimar y validar el modelo más apropiado para una serie temporal específica  .
 
 ### Primera Etapa: Identificación del Modelo
 
-La primera etapa corresponde a la identificación del modelo (Wikipedia, 2013). En esta fase inicial se debe asegurar que la serie sea **estacionaria**, es decir, que sus propiedades estadísticas como la media, varianza y autocorrelación se mantengan constantes a través del tiempo (NumXL, 2024; Wikipedia, 2013). Para verificar la estacionariedad, se aplica la **prueba de Dickey-Fuller Aumentada (ADF)**, cuya hipótesis nula establece que la serie posee una raíz unitaria y por tanto no es estacionaria (NumXL, 2024).
+La primera etapa corresponde a la identificación del modelo  .
+En esta fase inicial se debe asegurar que la serie sea **estacionaria**, es decir, que sus propiedades estadísticas como la media, varianza y autocorrelación se mantengan constantes a través del tiempo (NumXL, 2024).
+Para verificar la estacionariedad, se aplica la **prueba de Dickey-Fuller Aumentada (ADF)**, cuya hipótesis nula establece que la serie posee una raíz unitaria y por tanto no es estacionaria (NumXL, 2024).
 
 La prueba ADF formula la siguiente hipótesis:
 
-- $H₀$: La serie tiene raíz unitaria (no es estacionaria)
-- $H₁$: La serie no tiene raíz unitaria (es estacionaria)
+-   $H₀$: La serie tiene raíz unitaria (no es estacionaria)
+-   $H₁$: La serie no tiene raíz unitaria (es estacionaria)
 
 Si la prueba ADF arroja un p-valor inferior al nivel de significancia (típicamente 0.05), se rechaza la hipótesis nula y se concluye que la serie es estacionaria (NumXL, 2024).
 
-Cuando la serie original no es estacionaria, se aplica el proceso de **diferenciación**, que consiste en calcular la diferencia entre observaciones consecutivas (Wikipedia, 2013). La diferenciación de primer orden elimina tendencias lineales, mientras que diferenciaciones de orden superior pueden remover tendencias polinomiales más complejas (Wikipedia, 2013). Para series con componente estacional, se puede aplicar diferenciación estacional además de la regular (Wikipedia, 2013). Una vez alcanzada la estacionariedad, se procede a identificar los órdenes p y q del modelo mediante el análisis de las funciones de autocorrelación (ACF) y autocorrelación parcial (PACF) (Wikipedia, 2013).
+Cuando la serie original no es estacionaria, se aplica el proceso de **diferenciación**.
+La diferenciación de primer orden elimina tendencias lineales, mientras que diferenciaciones de orden superior pueden remover tendencias polinomiales más complejas  .
+Para series con componente estacional, se puede aplicar diferenciación estacional además de la regular  .
+Una vez alcanzada la estacionariedad, se procede a identificar los órdenes p y q del modelo mediante el análisis de las funciones de autocorrelación (ACF) y autocorrelación parcial (PACF)  .
 
-La **función de autocorrelación (ACF)** mide la correlación entre las observaciones de una serie temporal separadas por k períodos, proporcionando información sobre la estructura de dependencia temporal (Wikipedia, 2013). La **función de autocorrelación parcial (PACF)** mide la correlación entre observaciones separadas por k períodos después de ajustar por la influencia de los rezagos intermedios (Wikipedia, 2013). En términos prácticos, patrones específicos en la ACF y PACF sugieren diferentes especificaciones del modelo (Wikipedia, 2013):
+La **función de autocorrelación (ACF)** mide la correlación entre las observaciones de una serie temporal separadas por k períodos, proporcionando información sobre la estructura de dependencia temporal  .
+La **función de autocorrelación parcial (PACF)** mide la correlación entre observaciones separadas por k períodos después de ajustar por la influencia de los rezagos intermedios  .
+En términos prácticos, patrones específicos en la ACF y PACF sugieren diferentes especificaciones del modelo  :
 
-- Un **decaimiento exponencial en la ACF** junto con **cortes abruptos en la PACF** sugiere un modelo AR
-- El patrón inverso (cortes abruptos en ACF y decaimiento en PACF) indica un modelo MA
-- Patrones decrecientes en ambas funciones indican un modelo ARMA
+-   Un **decaimiento exponencial en la ACF** junto con **cortes abruptos en la PACF** sugiere un modelo AR
+-   El patrón inverso (cortes abruptos en ACF y decaimiento en PACF) indica un modelo MA
+-   Patrones decrecientes en ambas funciones indican un modelo ARMA
 
 ### Segunda Etapa: Estimación de Parámetros
 
-La segunda etapa es la **estimación de parámetros** (Wikipedia, 2013). Una vez identificado el modelo tentativo, se procede a estimar los coeficientes autorregresivos y de medias móviles mediante el método de **máxima verosimilitud** (Wikipedia, 2013). Este método encuentra los valores de los parámetros que maximizan la probabilidad de observar los datos disponibles (NumXL, 2024). Los programas estadísticos modernos utilizan algoritmos de optimización numérica para obtener estas estimaciones junto con sus errores estándar y estadísticos de significancia (Wikipedia, 2013).
+La segunda etapa es la **estimación de parámetros**  .
+Una vez identificado el modelo tentativo, se procede a estimar los coeficientes autorregresivos y de medias móviles mediante el método de **máxima verosimilitud**  .
+Este método encuentra los valores de los parámetros que maximizan la probabilidad de observar los datos disponibles (NumXL, 2024).
 
 ### Tercera Etapa: Diagnóstico y Validación del Modelo
 
-La tercera etapa corresponde al **diagnóstico y validación del modelo** (Wikipedia, 2013). Esta fase crítica determina si el modelo estimado es adecuado para describir los datos y realizar pronósticos (Wikipedia, 2013). La validación involucra varios aspectos fundamentales (Wikipedia, 2013):
+La tercera etapa corresponde al **diagnóstico y validación del modelo**  .
+Esta fase crítica determina si el modelo estimado es adecuado para describir los datos y realizar pronósticos  .
+La validación involucra varios aspectos fundamentales  :
 
-Primero, se verifica la **significancia estadística de los parámetros** estimados mediante pruebas t, asegurando que todos los coeficientes sean estadísticamente diferentes de cero (Wikipedia, 2013). Segundo, se comprueba que los parámetros cumplan las condiciones de estacionariedad para la parte AR y de invertibilidad para la parte MA (Wikipedia, 2013).
+Primero, se verifica la **significancia estadística de los parámetros** estimados mediante pruebas t, asegurando que todos los coeficientes sean estadísticamente diferentes de cero  .
+Segundo, se comprueba que los parámetros cumplan las condiciones de estacionariedad para la parte AR y de invertibilidad para la parte MA  .
 
-El **análisis de los residuales** constituye un elemento central en la validación del modelo (Wikipedia, 2013). Los residuales deben comportarse como **ruido blanco**, es decir, deben ser independientes entre sí, tener media cero, varianza constante y seguir una distribución normal (Wikipedia, 2013). Para verificar la independencia de los residuales se aplica la **prueba de Ljung-Box**, que evalúa de forma conjunta si existe autocorrelación significativa en los residuos (Wikipedia, 2014). La hipótesis nula de esta prueba establece que los residuos son independientes y no están correlacionados, mientras que la hipótesis alternativa indica que exhiben autocorrelación (Wikipedia, 2014). Si el p-valor de la prueba Ljung-Box es mayor al nivel de significancia (típicamente 0.05), no se rechaza la hipótesis nula y se concluye que los residuos son ruido blanco, validando la adecuación del modelo (Wikipedia, 2014).
+El **análisis de los residuales** constituye un elemento central en la validación del modelo  .
+Los residuales deben comportarse como **ruido blanco**, es decir, deben ser independientes entre sí, tener media cero, varianza constante y seguir una distribución normal  .
+Para verificar la independencia de los residuales se aplica la **prueba de Ljung-Box**, que evalúa de forma conjunta si existe autocorrelación significativa en los residuos (Wikipedia, 2014).
 
-Para comparar modelos alternativos y seleccionar el más apropiado, se utilizan **criterios de información** como el AIC (Criterio de Información de Akaike), AICc (AIC corregido) y BIC (Criterio de Información Bayesiano) (Wikipedia, 2013). Estos criterios evalúan la bondad de ajuste del modelo considerando tanto la verosimilitud de los datos como la complejidad del modelo, aplicando una penalización por el número de parámetros para evitar el sobreajuste (Wikipedia, 2013). El modelo óptimo es aquel que minimiza el valor del criterio de información seleccionado (Wikipedia, 2013). El AICc es preferible cuando el tamaño de la muestra es pequeño en relación con el número de parámetros, mientras que el BIC tiende a seleccionar modelos más parsimoniosos (Wikipedia, 2013).
+- **Hipótesis nula ($H_0$):**  
+  Los residuos son independientes y no están correlacionados (es decir, no hay autocorrelación serial).
+
+\[
+H_0: \rho_1 = \rho_2 = \dots = \rho_k = 0
+\]
+
+- **Hipótesis alternativa ($H_1$):**  
+  Los residuos exhiben autocorrelación (al menos una $\rho_j \neq 0$).
+
+\[
+H_1: \exists\, j \in \{1, \dots, k\} \mid \rho_j \neq 0
+\]
+
+donde $\rho_j$ es el coeficiente de autocorrelación de los residuos en el retardo $j$.
+
+
+Si el p-valor de la prueba Ljung-Box es mayor al nivel de significancia (típicamente 0.05), no se rechaza la hipótesis nula y se concluye que los residuos son ruido blanco, validando la adecuación del modelo (Wikipedia, 2014).
+
+Para comparar modelos alternativos y seleccionar el más apropiado, se utilizan **criterios de información** como el AIC (Criterio de Información de Akaike), AICc (AIC corregido) y BIC (Criterio de Información Bayesiano)  .
+Estos criterios evalúan la bondad de ajuste del modelo considerando tanto la verosimilitud de los datos como la complejidad del modelo, aplicando una penalización por el número de parámetros para evitar el sobreajuste  .
+El modelo óptimo es aquel que minimiza el valor del criterio de información seleccionado  .
+El AICc es preferible cuando el tamaño de la muestra es pequeño en relación con el número de parámetros, mientras que el BIC tiende a seleccionar modelos más parsimoniosos  .
 
 ### Cuarta Etapa: Predicción o Pronóstico
 
-La cuarta etapa es la **predicción o pronóstico** (Wikipedia, 2013). Una vez que se ha identificado, estimado y validado un modelo apropiado, se utiliza para generar pronósticos de valores futuros de la serie (Wikipedia, 2013). Los modelos ARIMA proporcionan pronósticos puntuales junto con intervalos de confianza que cuantifican la incertidumbre asociada a las predicciones (DataCamp, 2024). La amplitud de estos intervalos de confianza aumenta conforme se incrementa el horizonte de pronóstico, reflejando la mayor incertidumbre sobre valores más distantes en el futuro (DataCamp, 2024).
+La cuarta etapa es la **predicción o pronóstico**  .
+Una vez que se ha identificado, estimado y validado un modelo apropiado, se utiliza para generar pronósticos de valores futuros de la serie  .
+Los modelos ARIMA proporcionan pronósticos puntuales junto con intervalos de confianza que cuantifican la incertidumbre asociada a las predicciones (DataCamp, 2024).
+La amplitud de estos intervalos de confianza aumenta conforme se incrementa el horizonte de pronóstico, reflejando la mayor incertidumbre sobre valores más distantes en el futuro (DataCamp, 2024).
 
-Esta metodología iterativa permite refinar sucesivamente el modelo hasta obtener una especificación que capture adecuadamente la estructura de dependencia temporal de los datos, proporcione residuales que satisfagan los supuestos requeridos y genere pronósticos confiables para la toma de decisiones (Wikipedia, 2013).
+Esta metodología iterativa permite refinar sucesivamente el modelo hasta obtener una especificación que capture adecuadamente la estructura de dependencia temporal de los datos, proporcione residuales que satisfagan los supuestos requeridos y genere pronósticos confiables para la toma de decisiones  .
+
+# Descripción de la serie temporal
+
+## Analisis financiero
+
+```{r}
+
+Base_datos=read_excel("ICOLCAP.xlsx") %>%
+  rename(Fecha=1,Cierre=2)
+
+Serie<-xts(Base_datos$Cierre,order.by = Base_datos$Fecha)
+
+accion<-Serie %>% na.omit()
+
+```
+
+
+## Contexto Histórico de la Serie de Tiempo
+
+El COLCAP (Colombia Capital) es el índice bursátil de referencia de la Bolsa de Valores de Colombia que refleja el comportamiento del mercado accionario colombiano a través del desempeño de las acciones más líquidas y representativas del país (Wikipedia, 2017). Este indicador fue inaugurado oficialmente el 15 de enero de 2008 con un valor inicial de 1.000 puntos, siendo creado por la Bolsa de Valores de Colombia con el propósito de ofrecer un reflejo fiel del comportamiento de las acciones más significativas que se negocian en su plataforma (Rankia, 2024; Wikipedia, 2017).
+
+La creación del COLCAP surgió en un contexto de consolidación y modernización del mercado de capitales colombiano. La historia del mercado bursátil en Colombia se remonta al año 1928 con la creación de la Bolsa de Bogotá, la primera de su tipo en el país (Hapi Trade, 2025). Con el tiempo se fundaron otras bolsas importantes como las de Medellín y Occidente, cada una operando de manera independiente durante varias décadas (Hapi Trade, 2025). En 2001 se llevó a cabo la integración de estas tres bolsas regionales para conformar la Bolsa de Valores de Colombia (BVC), proceso que unificó las operaciones y normativas del mercado accionario nacional (Hapi Trade, 2025). En ese mismo año se implementó el Índice General de la Bolsa de Colombia (IGBC) como primer indicador consolidado del mercado (Hapi Trade, 2025).
+
+## El Ciclo de Descenso (2015-2020)
+
+### Crisis Petrolera y Caída Inicial (2015-2016)
+
+El periodo 2015-2016 marcó un punto de inflexión negativo para el mercado accionario colombiano. El COLCAP enfrentó presiones significativas debido a la caída abrupta de los precios internacionales del petróleo. El crudo Brent, que es fundamental para la economía colombiana dado el peso de Ecopetrol en el índice, experimentó un descenso dramático desde niveles superiores a $100 por barril en 2014 hasta mínimos cercanos a $30 por barril a principios de 2016 (Valora Analitik, 2020; Ecopetrol, 2020; TradingView, 2025).
+
+```{r brent}
+
+```
+
+
+Los analistas proyectaban que el índice COLCAP terminaría 2015 en aproximadamente 1.213 unidades, reflejando una caída considerable respecto a años anteriores (La República, 2015). Esta presión se intensificó por el incremento en la probabilidad de alzas en las tasas de interés en Estados Unidos, lo que afectó los flujos de capital hacia mercados emergentes (La República, 2015). El sector energético, especialmente Ecopetrol, sufrió desvalorizaciones pronunciadas con su acción cayendo de $5.930 pesos (máximo histórico en mayo de 2012) hasta mínimos de $880 pesos en enero de 2016 (TradingView, 2025; Ocensa, 2025).
+
+
+### Recuperación Moderada y Volatilidad (2017-2019)
+
+Entre 2017 y 2019, el mercado colombiano experimentó una recuperación moderada pero inconsistente. Los precios del petróleo se estabilizaron gradualmente, con el Brent promediando alrededor de $64 por barril en 2019, aunque esto representaba una caída del 10.5% respecto a 2018 (Ecopetrol, 2020; Corficolombiana, 2020). 
+
+Ecopetrol logró adaptarse a este nuevo entorno de precios más bajos, alcanzando una utilidad neta récord de $13.3 billones en 2019, la más alta en seis años, con un EBITDA histórico de 31.1 billones (Ecopetrol, 2020; Corficolombiana, 2020).
+
+Sin embargo, el índice COLCAP no logró traducir estos buenos resultados corporativos individuales en un desempeño bursátil consistente. La falta de liquidez en el mercado colombiano y el número limitado de emisores continuaron siendo obstáculos estructurales (Bloomberg Línea, 2022; Emerald Insight, 2017). Durante 2018, el volumen de negociación registró nuevos mínimos, siguiendo la tendencia negativa iniciada en 2017 (Casa de Bolsa, 2018).
+
+### Pandemia COVID-19: El Colapso de 2020
+El año 2020 representó uno de los periodos más desafiantes en la historia reciente del mercado accionario colombiano. La pandemia de COVID-19 provocó un desplome histórico del COLCAP, que cerró 2019 en 1.662,42 unidades y terminó 2020 en 1.437,89 puntos, reflejando una pérdida del 13.5% (Valora Analitik, 2020). El mínimo histórico se alcanzó el 18 de marzo de 2020, cuando el índice tocó 880,72 puntos (TradingView, 2025; Repositorio Unicórdoba, 2021).
+
+Las acciones más afectadas fueron aquellas del sector financiero y energético. Ecopetrol vio su acción caer de $3.315 pesos en 2019 a $2.245 pesos en 2020, una disminución del 32.27% (Valora Analitik, 2020). Las acciones del Grupo Sura (preferencial y ordinaria) también sufrieron caídas superiores al 24% (Valora Analitik, 2020). El impacto de la pandemia se sintió de manera diferencial: mientras el riesgo y la volatilidad aumentaron significativamente durante el periodo pandémico, algunas empresas demostraron mayor resiliencia que otras (Dialnet, 2021; Revista Económica UdeM, 2021).
+
+```{r Grupo SURA}
+
+```
 
 
 
+## El Periodo de Recuperación Gradual (2021-2023)
+### Rebote Post-Pandemia (2021-2022)
+El año 2021 marcó el inicio de una recuperación económica significativa para Colombia. El PIB creció un impresionante 10.7%, seguido de un 8.6% en el primer semestre de 2022 (Banco de la República, 2021). Esta reactivación estuvo impulsada por políticas monetarias expansivas, el avance en los programas de vacunación, y mejores términos de intercambio gracias a la recuperación de los precios del petróleo (Banco de la República, 2021; Casa de Bolsa, 2021).
 
-# Descripcion de la serie temporal
+El petróleo Brent experimentó una fuerte recuperación, pasando de niveles cercanos a $78 por barril a inicios de 2022 hasta alcanzar un máximo de $127 por barril en marzo de 2022, impulsado por la invasión rusa a Ucrania (Ecopetrol, 2023; CARM, 2022). Sin embargo, para finales de 2022, el Brent había moderado su precio a aproximadamente $86 por barril (Ecopetrol, 2023).
+
+A pesar de este contexto macroeconómico favorable, el mercado accionario colombiano no logró capitalizar plenamente este boom económico. El COLCAP tuvo un desempeño inferior al esperado debido a varios factores: la pérdida del grado de inversión en 2021, la incertidumbre política ante las elecciones presidenciales de 2022, y la falta de liquidez estructural del mercado (Bloomberg Línea, 2022; Casa de Bolsa, 2021).
+
+### Incertidumbre Política y Reformas (2022-2023)
+La elección de Gustavo Petro en junio de 2022 introdujo una nueva fuente de volatilidad e incertidumbre en los mercados. El COLCAP, que había repuntado brevemente hasta los 1.500 puntos en 2022, se desplomó nuevamente tras la victoria de Petro en segunda vuelta (El Colombiano, 2025). La propuesta de transición energética del nuevo gobierno generó preocupaciones sobre el futuro de Ecopetrol, la empresa más importante del índice (Bloomberg Línea, 2022).
+
+El gobierno de Petro implementó la Reforma Tributaria 2022 (Ley 2277), que entró en vigor en 2023 y buscaba recaudar inicialmente $25 billones (Jade & Rio, 2024; La República, 2023). Esta reforma introdujo cambios significativos que afectaron directamente al mercado accionario:
+
+Aumento del impuesto a dividendos: la tarifa para dividendos de personas naturales residentes se incrementó al 15%, y al 20% para no residentes (Jade & Rio, 2024; Infobae Colombia, 2024).
+
+Sobretasa permanente del 5% para el sector financiero, elevando su tarifa efectiva de renta al 40% (Jade & Rio, 2024; La República, 2023).
+
+Limitación de deducciones y descuentos tributarios al 3% de la renta líquida ordinaria (Jade & Rio, 2024).
+
+La incertidumbre sobre estas medidas, sumada a las presiones inflacionarias globales y locales (la inflación en Colombia alcanzó 9.28% en 2023), mantuvo al mercado accionario bajo presión (El País, 2024; ANIF, 2025). En 2023, el índice retornó a niveles similares a los de la crisis pandémica, con valoraciones extremadamente bajas. Un informe de JP Morgan advirtió que las valoraciones de la BVC eran las más bajas entre todos los mercados emergentes, y se consideró incluso la posibilidad de reclasificar a Colombia como "mercado frontera" (El Colombiano, 2025).
+
+### La Recuperación Histórica (2024-2025)
+Optimismo Renovado y Máximos Históricos
+Contra todas las expectativas, 2024 y 2025 han sido años excepcionales para el mercado accionario colombiano. El MSCI COLCAP ha experimentado un rally histórico, alcanzando máximos nunca antes vistos. En octubre de 2024, el índice llegó a 1.987,12 puntos, superando todos los registros anteriores (La República, 2025; INCP, 2024). Para noviembre de 2025, el índice había superado por primera vez la barrera de los 2.000 puntos, consolidando un crecimiento del 45% en el año (RTVC Noticias, 2025; Colombia Chamber, 2025).
+
+El principal motor del rally fue la resolución del conflicto corporativo más largo en la historia reciente del país: el llamado "desenroque" del GEA. Las compañías involucradas en este intercambio de activos desbloquearon un valor inmenso para sus accionistas al simplificar sus estructuras de propiedad. Grupo Argos y Cementos Argos fueron las grandes estrellas; esta última implementó su estrategia "Sprint 2.0", que incluyó la combinación de sus activos en EE.UU. con Summit Materials y una conversión masiva de acciones preferenciales a ordinarias. Como resultado, para septiembre de 2025, la acción de Grupo Argos había triplicado su valor en dos años, y Cementos Argos registró valorizaciones superiores al 150% en 2024, impulsadas por la liberación de valor que el mercado llevaba años exigiendo (Valora Analitik, 2025; La República, 2025).
+
+
+
+El 2 de diciembre de 2025, el MSCI COLCAP cerró en 2.115,75 puntos, registrando una variación positiva del 1.65% en la jornada y acumulando un crecimiento anual del 53.36% (Valora Analitik, 2025a; Yahoo Finanzas, 2025). En lo corrido de los últimos cinco años, el índice ha crecido 62.98%, y en la última década ha aumentado 95.68% (La República, 2025a; Valora Analitik, 2025a).
+
+## Actualidad
+
+El contexto histórico del ICOLCAP entre 2015 y 2025 refleja una montaña rusa de ciclos económicos, crisis y recuperaciones. Desde las profundidades de la crisis petrolera de 2015-2016, pasando por el colapso pandémico de 2020, hasta el rally histórico de 2024-2025, el mercado accionario colombiano ha demostrado tanto vulnerabilidad como resiliencia (Investing.com, 2025; Trading Economics, 2025; Bloomberg Línea, 2022; INCP, 2024; TradingView, 2025; Valora Analitik, 2020; Valora Analitik, 2025a; El Colombiano, 2025).
+
+El momento actual representa un punto de inflexión significativo. Por primera vez en su historia, el MSCI COLCAP ha superado los 2.100 puntos, consolidando un crecimiento de más del 50% en el año (La República, 2025a; Valora Analitik, 2025a; Yahoo Finanzas, 2025). Sin embargo, este éxito debe contextualizarse: es en gran medida una recuperación desde niveles históricamente deprimidos más que un crecimiento sostenido de largo plazo (El Colombiano, 2025).
+
+Para que esta tendencia positiva se consolide, Colombia necesitará abordar sus desafíos estructurales: mejorar la profundidad y liquidez del mercado, reducir la carga tributaria sobre las empresas, mantener la estabilidad macroeconómica, y sobre todo, garantizar un entorno institucional predecible y favorable para la inversión privada (Bloomberg Línea, 2022; INCP, 2024; El Colombiano, 2025). El desempeño futuro del ICOLCAP dependerá crucialmente de cómo el país navegue estos desafíos en los años venideros.
+
+
 
 
 # Resultados del modelo ARIMA
 
-# Concluciones 
+## Ventanas
+
+La primera etapa del análisis consistió en examinar las características de la serie temporal del índice COLCAP para determinar su estacionariedad. La serie fue dividida en dos ventanas temporales: una ventana de entrenamiento que abarca desde el inicio de la serie hasta el 31 de octubre de 2025, y una ventana de prueba que comprende desde el 3 de noviembre de 2025 en adelante. Esta partición permitió reservar observaciones recientes para validar posteriormente la capacidad predictiva del modelo ajustado.
+
+La Figura 1 presenta el gráfico de la serie temporal de la ventana de entrenamiento del índice COLCAP. La visualización revela la presencia de una tendencia creciente sostenida a lo largo del período analizado (Minitab, 2024). Este patrón ascendente en el largo plazo indica que la media de la serie no permanece constante a través del tiempo, sino que exhibe un incremento progresivo en los valores del índice (Minitab, 2024). Adicionalmente, se observan fluctuaciones alrededor de la tendencia que corresponden a la volatilidad característica de los mercados financieros, reflejando movimientos de corto plazo en los precios de las acciones que componen el índice (Wikipedia, 2007).
+
+```{r VEntanas,fig.width=10, fig.height=6, out.width='100%'}
+
+ventana<-window(accion, end = ("2025-10-31")) # ventana de entrenamiento
+ventana2<-window(accion, start = ("2025-11-03")) # ventana de prueba
+library(tidyquant)
+library(plotly)
+library(xts)
+library(scales)
+
+css_colors <- list(
+  oro_premium = "#D4AF37",
+  oro_lujo = "#FFD700",
+  oro_antiguo = "#B8860B",
+  fondo_negro = "#0A0A0A",
+  panel_negro = "#1A1A1A",
+  grilla_oscura = "#2C2C2C",
+  texto_claro = "#FFF8DC",
+  texto_oro = "#D4AF37"
+)
+
+grafica_icolcap_dinamica <- function(ventana) {
+  
+  if(inherits(ventana, "xts")) {
+    df <- data.frame(
+      Fecha = as.Date(index(ventana)), 
+      ICOLCAP = as.numeric(coredata(ventana))
+    )
+  } 
+  else if(inherits(ventana, "zoo")) {
+    df <- data.frame(
+      Fecha = as.Date(time(ventana)),  
+      ICOLCAP = as.numeric(coredata(ventana))
+    )
+  }
+  else {
+    df <- as.data.frame(ventana)
+    if(!inherits(df$Fecha, "Date")) {
+      df$Fecha <- as.Date(df$Fecha)
+    }
+  }
+  
+  icolcap_xts <- xts::xts(df$ICOLCAP, order.by = df$Fecha)
+  
+  tryCatch({
+    df$SMA_20 <- as.numeric(TTR::SMA(icolcap_xts, n = 20))
+    df$SMA_50 <- as.numeric(TTR::SMA(icolcap_xts, n = 50))
+    bb <- TTR::BBands(icolcap_xts, n = 20, sd = 2)
+    if(!is.null(bb)) {
+      df$BB_Lower <- as.numeric(bb$dn)
+      df$BB_Middle <- as.numeric(bb$mavg)
+      df$BB_Upper <- as.numeric(bb$up)
+    } else {
+      df$BB_Lower <- df$ICOLCAP
+      df$BB_Middle <- df$ICOLCAP
+      df$BB_Upper <- df$ICOLCAP
+    }
+  }, error = function(e) {
+    df$SMA_20 <- df$ICOLCAP
+    df$SMA_50 <- df$ICOLCAP
+    df$BB_Lower <- df$ICOLCAP
+    df$BB_Middle <- df$ICOLCAP
+    df$BB_Upper <- df$ICOLCAP
+  })
+  
+  df <- na.omit(df)
+  
+  max_valor <- max(df$ICOLCAP, na.rm = TRUE)
+  min_valor <- min(df$ICOLCAP, na.rm = TRUE)
+  media_valor <- mean(df$ICOLCAP, na.rm = TRUE)
+  ultimo_valor <- tail(df$ICOLCAP, 1)
+  primer_valor <- head(df$ICOLCAP, 1)
+  variacion_total <- ((ultimo_valor - primer_valor) / primer_valor) * 100
+  
+  fig <- plot_ly(df, x = ~Fecha)
+  
+  fig <- fig %>%
+    add_lines(
+      y = ~ICOLCAP,
+      name = "ICOLCAP",
+      line = list(color = css_colors$oro_premium, width = 2.5),
+      hovertemplate = paste(
+        "<b>ICOLCAP</b><br>",
+        "Fecha: %{x|%d-%b-%Y}<br>",
+        "Precio: %{y:.2f} pts<br>",
+        "<extra></extra>"
+      )
+    ) %>%
+    add_lines(
+      y = ~SMA_20,
+      name = "SMA 20 días",
+      line = list(color = css_colors$oro_lujo, width = 1.5, dash = "dash"),
+      hovertemplate = "SMA-20: %{y:.2f}<extra></extra>"
+    ) %>%
+    add_lines(
+      y = ~SMA_50,
+      name = "SMA 50 días",
+      line = list(color = css_colors$texto_claro, width = 1.5, dash = "dot"),
+      hovertemplate = "SMA-50: %{y:.2f}<extra></extra>"
+    )
+  
+  fig <- fig %>%
+    add_markers(
+      data = df[which.max(df$ICOLCAP), ],
+      x = ~Fecha,
+      y = ~ICOLCAP,
+      name = "Máximo",
+      marker = list(
+        color = css_colors$oro_lujo,
+        size = 10,
+        symbol = "diamond",
+        line = list(color = css_colors$oro_premium, width = 2)
+      ),
+      hovertemplate = paste(
+        "<b>MÁXIMO</b><br>",
+        "Fecha: %{x|%d-%b-%Y}<br>",
+        "Precio: %{y:.2f} pts<br>",
+        "<extra></extra>"
+      )
+    ) %>%
+    add_markers(
+      data = df[which.min(df$ICOLCAP), ],
+      x = ~Fecha,
+      y = ~ICOLCAP,
+      name = "Mínimo",
+      marker = list(
+        color = css_colors$oro_antiguo,
+        size = 10,
+        symbol = "diamond",
+        line = list(color = css_colors$oro_premium, width = 2)
+      ),
+      hovertemplate = paste(
+        "<b>MÍNIMO</b><br>",
+        "Fecha: %{x|%d-%b-%Y}<br>",
+        "Precio: %{y:.2f} pts<br>",
+        "<extra></extra>"
+      )
+    ) %>%
+    add_markers(
+      data = tail(df, 1),
+      x = ~Fecha,
+      y = ~ICOLCAP,
+      name = "Actual",
+      marker = list(
+        color = css_colors$texto_claro,
+        size = 8,
+        symbol = "circle",
+        line = list(color = css_colors$oro_premium, width = 2)
+      ),
+      hovertemplate = paste(
+        "<b>ACTUAL</b><br>",
+        "Fecha: %{x|%d-%b-%Y}<br>",
+        "Precio: %{y:.2f} pts<br>",
+        "<extra></extra>"
+      )
+    )
+  
+  fig <- fig %>%
+    layout(
+      title = list(
+        text = paste(
+          "<span style='font-family:Cinzel; color:#D4AF37; font-size:24px;'>",
+          "Figura 1. - VENTANA DE ENTRENAMIENTO </span><br>",
+          "<span style='font-family:Playfair Display; color:#FFF8DC; font-size:16px;'>",
+          "Período: ", format(min(df$Fecha), "%d %b %Y"), 
+          " - ", format(max(df$Fecha), "%d %b %Y"),
+          " | Variación: ", sprintf("%+.2f%%", variacion_total), "</span>"
+        ),
+        x = 0.5,
+        xanchor = 'center'
+      ),
+      
+      xaxis = list(
+        title = list(
+          text = "<b>FECHA</b>",
+          font = list(family = 'Cinzel', color = css_colors$oro_premium, size = 14)
+        ),
+        gridcolor = css_colors$grilla_oscura,
+        linecolor = css_colors$oro_premium,
+        tickfont = list(family = 'Inter', color = css_colors$texto_claro, size = 11),
+        showgrid = TRUE,
+        showline = TRUE,
+        zeroline = FALSE,
+        type = "date",
+        tickformat = "%b %Y"
+      ),
+      
+      yaxis = list(
+        title = list(
+          text = "<b>VALOR DEL ÍNDICE (PUNTOS)</b>",
+          font = list(family = 'Cinzel', color = css_colors$oro_premium, size = 14)
+        ),
+        gridcolor = css_colors$grilla_oscura,
+        tickfont = list(family = 'Inter', color = css_colors$texto_claro, size = 11),
+        linecolor = css_colors$oro_premium,
+        zerolinecolor = css_colors$grilla_oscura,
+        showline = TRUE,
+        zeroline = FALSE,
+        tickformat = ",.2f"
+      ),
+      
+      plot_bgcolor = css_colors$fondo_negro,
+      paper_bgcolor = css_colors$fondo_negro,
+      
+      hoverlabel = list(
+        bgcolor = 'rgba(26, 26, 26, 0.9)',
+        bordercolor = css_colors$oro_premium,
+        font = list(family = 'Inter', color = css_colors$texto_claro, size = 11)
+      ),
+      
+      margin = list(l = 80, r = 80, t = 120, b = 100),
+      
+      legend = list(
+        orientation = 'h',
+        x = 0.5,
+        xanchor = 'center',
+        y = -0.2,
+        bgcolor = 'rgba(0,0,0,0)',
+        font = list(family = 'Cinzel', color = css_colors$oro_premium, size = 12)
+      ),
+      
+      annotations = list(
+        list(
+          x = 0.5,
+          y = 1.05,
+          xref = "paper",
+          yref = "paper",
+          text = paste(
+            "Máximo: ", round(max_valor, 2), 
+            " | Mínimo: ", round(min_valor, 2),
+            " | Media: ", round(media_valor, 2)
+          ),
+          showarrow = FALSE,
+          font = list(family = 'Playfair Display', size = 12, color = css_colors$texto_claro),
+          bgcolor = 'rgba(26, 26, 26, 0.7)',
+          bordercolor = css_colors$oro_premium,
+          borderwidth = 1,
+          borderpad = 8
+        )
+      ),
+      
+      shapes = list(
+        list(
+          type = 'line',
+          x0 = min(df$Fecha),
+          x1 = max(df$Fecha),
+          y0 = media_valor,
+          y1 = media_valor,
+          line = list(color = 'rgba(212, 175, 55, 0.5)', width = 1, dash = 'dash')
+        )
+      )
+    )
+  
+  return(fig)
+}
+
+grafica_final <- grafica_icolcap_dinamica(ventana)
+grafica_final
+
+```
+
+La presencia de esta tendencia creciente constituye un indicio preliminar de no estacionariedad en la serie, dado que una serie estacionaria debe mantener propiedades estadísticas constantes a lo largo del tiempo, incluyendo una media estable (NumXL, 2024; Wikipedia, 2013). Este comportamiento es típico en series financieras de precios e índices bursátiles, donde los valores tienden a presentar deriva estocástica o tendencias deterministas que impiden la estacionariedad.
+
+La Figura 2 muestra el correlograma de la función de autocorrelación (ACF) para la serie original. El gráfico ACF exhibe un patrón característico de decaimiento lento en las autocorrelaciones a medida que aumenta el número de rezagos (LinkedIn, 2025). Las autocorrelaciones permanecen significativamente diferentes de cero y positivas durante un número considerable de rezagos, superando las bandas de confianza (líneas punteadas azules) y decayendo de manera gradual sin converger rápidamente hacia cero (LinkedIn, 2025; Miranda, 2021).
+
+
+```{r ACF, fig.width=10, fig.height=6, out.width='100%'}
+library(plotly)
+library(forecast)
+
+css_acf <- list(
+  fondo_negro = "#0A0A0A",
+  panel_negro = "#1A1A1A",
+  grilla_oscura = "#2C2C2C",
+  oro_premium = "#D4AF37",
+  oro_lujo = "#FFD700",
+  oro_antiguo = "#B8860B",
+  luz_oro = "#FFF8DC",
+  puro_blanco = "#FFFFFF"
+)
+
+acf_data <- Acf(ventana, lag.max = 80, plot = FALSE)
+confianza <- 2/sqrt(length(ventana))
+
+df_acf <- data.frame(
+  Lag = 0:80,
+  ACF = as.numeric(acf_data$acf),
+  Significativo = abs(as.numeric(acf_data$acf)) > confianza,
+  Color = ifelse(abs(as.numeric(acf_data$acf)) > confianza, 
+                 css_acf$oro_lujo, css_acf$oro_premium)
+)
+
+fig <- plot_ly(df_acf, x = ~Lag)
+
+fig <- fig %>%
+  add_bars(
+    y = ~ACF,
+    marker = list(
+      color = ~Color,
+      line = list(color = css_acf$oro_premium, width = 1.5)
+    ),
+    name = "ACF",
+    hovertemplate = paste(
+      "<b>Lag: %{x}</b><br>",
+      "ACF: %{y:.3f}<br>",
+      "<extra></extra>"
+    )
+  )
+
+fig <- fig %>%
+  add_trace(
+    x = c(-1, 41),
+    y = c(confianza, confianza),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$oro_antiguo, dash = 'dash', width = 1.5),
+    name = 'Límite Superior',
+    hoverinfo = 'none'
+  )
+
+fig <- fig %>%
+  add_trace(
+    x = c(-1, 41),
+    y = c(-confianza, -confianza),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$oro_antiguo, dash = 'dash', width = 1.5),
+    name = 'Límite Inferior',
+    hoverinfo = 'none'
+  )
+
+fig <- fig %>%
+  add_trace(
+    x = c(-1, 41),
+    y = c(0, 0),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$luz_oro, width = 1),
+    name = 'Línea Cero',
+    hoverinfo = 'none'
+  )
+
+fig <- fig %>%
+  add_markers(
+    data = subset(df_acf, Significativo & Lag > 0),
+    x = ~Lag,
+    y = ~ACF,
+    marker = list(
+      color = css_acf$oro_lujo,
+      size = 10,
+      symbol = 'diamond',
+      line = list(color = css_acf$oro_premium, width = 2)
+    ),
+    name = 'Significativo',
+    hovertemplate = paste(
+      "<b>¡SIGNIFICATIVO!</b><br>",
+      "Lag: %{x}<br>",
+      "ACF: %{y:.3f}<br>",
+      "<extra></extra>"
+    )
+  )
+
+fig <- fig %>%
+  layout(
+    title = list(
+      text = "<span style='font-family:Cinzel; color:#D4AF37; font-size:24px;'>
+              Figura 2. FUNCIÓN DE AUTOCORRELACIÓN (ACF) - ICOLCAP</span><br>"
+              ,
+      x = 0.5,
+      xanchor = 'center'
+    ),
+    
+    xaxis = list(
+      title = list(
+        text = "<b>REZAGO (LAGS)</b>",
+        font = list(family = 'Cinzel', color = css_acf$oro_premium, size = 14)
+      ),
+      gridcolor = css_acf$grilla_oscura,
+      linecolor = css_acf$oro_premium,
+      tickfont = list(family = 'Inter', color = css_acf$luz_oro, size = 11),
+      zeroline = FALSE,
+      showgrid = TRUE,
+      range = c(-0.5, 80.5),
+      dtick = 5
+    ),
+    
+    yaxis = list(
+      title = list(
+        text = "<b>COEFICIENTE ACF</b>",
+        font = list(family = 'Cinzel', color = css_acf$oro_premium, size = 14)
+      ),
+      gridcolor = css_acf$grilla_oscura,
+      linecolor = css_acf$oro_premium,
+      tickfont = list(family = 'Inter', color = css_acf$luz_oro, size = 11),
+      range = c(-1.1, 1.1),
+      tickvals = seq(-1, 1, 0.2),
+      tickformat = '.1f',
+      zeroline = FALSE,
+      showgrid = TRUE
+    ),
+    
+    plot_bgcolor = css_acf$fondo_negro,
+    paper_bgcolor = css_acf$fondo_negro,
+    
+    hoverlabel = list(
+      bgcolor = alpha(css_acf$panel_negro, 0.9),
+      bordercolor = css_acf$oro_premium,
+      font = list(family = 'Inter', color = css_acf$luz_oro, size = 11)
+    ),
+    
+    margin = list(l = 80, r = 80, t = 120, b = 100),
+    
+    legend = list(
+      orientation = 'h',
+      x = 0.5,
+      xanchor = 'center',
+      y = -0.2,
+      bgcolor = 'rgba(0,0,0,0)',
+      font = list(family = 'Cinzel', color = css_acf$oro_premium, size = 12)
+    ),
+    
+    annotations = list(
+      list(
+        x = 1,
+        y = 1.05,
+        xref = 'paper',
+        yref = 'paper',
+        text = paste(
+          "Intervalo de confianza: 95%<br>",
+          "Lags analizados: 80<br>",
+          "N observaciones:", length(ventana), "<br>",
+          "Límite confianza: ±", round(confianza, 3)
+        ),
+        showarrow = FALSE,
+        align = 'right',
+        font = list(
+          family = 'Playfair Display',
+          size = 12,
+          color = css_acf$luz_oro
+        ),
+        bgcolor = alpha(css_acf$panel_negro, 0.7),
+        bordercolor = css_acf$oro_premium,
+        borderwidth = 1,
+        borderpad = 10
+      )
+    ),
+    
+    shapes = list(
+      list(
+        type = 'rect',
+        x0 = -0.5,
+        x1 = 80.5,
+        y0 = -confianza,
+        y1 = confianza,
+        fillcolor = alpha(css_acf$oro_premium, 0.05),
+        line = list(width = 0)
+      )
+    )
+  )
+
+fig
+```
+
+Este patrón de decaimiento lento en la ACF es un indicador robusto de no estacionariedad en la serie temporal (LinkedIn, 2025; Miranda, 2021; UCM, 2013). En particular, cuando las autocorrelaciones muestrales decaen de forma lenta y presentan valores elevados en los primeros rezagos, esto sugiere fuertemente la presencia de una raíz unitaria en el proceso generador de datos, lo cual implica que la serie posee una deriva estocástica (Universidad de Vigo, s.f.; NumXL, 2024). Las series con raíz unitaria no revierten a una media constante y tienden a alejarse indefinidamente de cualquier valor inicial, característica incompatible con la estacionariedad (NumXL, 2024).
+
+En contraste, una serie estacionaria mostraría autocorrelaciones que decaen rápidamente hacia cero después de algunos rezagos, permaneciendo dentro de las bandas de confianza (LinkedIn, 2025). El comportamiento observado en la ACF del COLCAP confirma visualmente la necesidad de aplicar transformaciones a la serie original para alcanzar la estacionariedad requerida por los modelos ARIMA (LinkedIn, 2025; Wikipedia, 2013).
+
+Para complementar el análisis gráfico y proporcionar evidencia estadística formal sobre la estacionariedad de la serie podemos verlo en la tabla 1, se aplicó la prueba de Dickey-Fuller Aumentada (ADF). Los resultados de la prueba ADF se interpretan examinando el valor p obtenido. Si el valor p es mayor que el nivel de significancia convencional de 0.05, la decisión estadística es no rechazar la hipótesis nula, concluyendo que existe evidencia insuficiente para afirmar que la serie es estacionaria (Minitab, 2024; NumXL, 2024). En el caso de la serie original del COLCAP, los resultados de la prueba ADF confirman estadísticamente lo observado en los análisis gráficos previos: la serie no es estacionaria (NumXL, 2024).
+
+```{r test ACF} 
+library(kableExtra)
+library(tseries)
+
+# Realizar la prueba ADF
+resultado_adf <- adf.test(ventana)
+
+# Extraer valores básicos
+df_valor <- round(resultado_adf$statistic, 6)
+p_valor <- ifelse(resultado_adf$p.value < 0.001, "< 0.001", 
+                  sprintf("%.6f", resultado_adf$p.value))
+lags_valor <- resultado_adf$parameter
+n_obs <- length(ventana) - lags_valor
+
+# Determinar significancia
+es_significativo <- resultado_adf$p.value < 0.05
+color_significancia <- ifelse(es_significativo, "#D4AF37", "#FF6B6B")
+simbolo_significancia <- ifelse(es_significativo, "✓", "✗")
+texto_significancia <- ifelse(es_significativo, "Significativo (rechaza H₀ a α = 0.05)", "No significativo")
+
+# Crear dataframe
+df_tabla <- data.frame(
+  Estadístico = c(
+    "Dickey-Fuller Aumentado",
+    "Valor p",
+    "Retrasos (Lags)",
+    "Observaciones"
+  ),
+  Valor = c(
+    sprintf("%.6f", df_valor),
+    p_valor,
+    as.character(lags_valor),
+    as.character(n_obs)
+  ),
+  Interpretación = c(
+    "Estadístico de prueba para H₀: raíz unitaria",
+    ifelse(es_significativo,
+           paste0("<span style='color:", color_significancia, "; font-weight:bold;'>", 
+                  simbolo_significancia, " ", texto_significancia, "</span>"),
+           paste0("<span style='color:", color_significancia, ";'>", 
+                  simbolo_significancia, " ", texto_significancia, "</span>")),
+    "Número de retardos utilizados",
+    "Tamaño efectivo de muestra"
+  ),
+  stringsAsFactors = FALSE
+)
+
+# Generar la tabla - VERSIÓN CORREGIDA
+tabla_html <- kable(
+  df_tabla,
+  align = c("l", "c", "l"),
+  col.names = c("**Estadístico**", "**Valor**", "**Interpretación**"),
+  escape = FALSE,
+  format = "html"
+)
+
+# Aplicar estilos básicos primero
+tabla_estilizada <- tabla_html %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 16,
+    html_font = "'Inter', sans-serif"
+  )
+
+# Aplicar estilo al encabezado
+tabla_estilizada <- tabla_estilizada %>%
+  row_spec(0, 
+           background = "#D4AF37",
+           color = "#0A0A0A",
+           bold = TRUE,
+           font_size = 18)
+
+# Aplicar estilo a las filas del cuerpo
+for(i in 1:4) {
+  color_fondo <- ifelse(i %% 2 == 1, "#1A1A1A", "#2C2C2C")
+  
+  if(i == 2) {  # Fila del valor p
+    tabla_estilizada <- tabla_estilizada %>%
+      row_spec(i, 
+               color = "#F5F5F5",
+               background = color_fondo,
+               bold = FALSE)
+  } else {
+    tabla_estilizada <- tabla_estilizada %>%
+      row_spec(i, 
+               color = "#F5F5F5",
+               background = color_fondo)
+  }
+}
+
+# Estilo para columnas
+tabla_estilizada <- tabla_estilizada %>%
+  column_spec(1, 
+              color = "#D4AF37",
+              bold = TRUE) %>%
+  column_spec(2, 
+              color = "#FFFFFF",
+              bold = TRUE) %>%
+  column_spec(3, 
+              color = "#E0E0E0",
+              bold = FALSE)
+
+# Agregar nota al pie
+conclusion <- ifelse(es_significativo,
+                    "La serie es ESTACIONARIA (rechaza H₀)",
+                    "La serie NO ES ESTACIONARIA (no rechaza H₀)")
+
+tabla_final <- tabla_estilizada
+
+tabla_final
+```
+
+
+Este hallazgo indica que la serie posee una raíz unitaria y presenta deriva estocástica, manteniendo una tendencia que impide que sus propiedades estadísticas permanezcan constantes a través del tiempo (NumXL, 2024; Wikipedia, 2013). La conclusión derivada de la prueba ADF es que se requiere aplicar diferenciación a la serie para remover la tendencia y lograr estacionariedad (Minitab, 2024; Wikipedia, 2013).
+
+## Difenciación
+
+Como se concluyó en el análisis anterior, la serie original del COLCAP requería diferenciación para alcanzar la estacionariedad. Por lo tanto, se procedió a aplicar una diferenciación de primer orden a la serie, La Figura 3 presenta el gráfico de la serie temporal después de aplicar la diferenciación de primer orden. La visualización muestra un cambio drástico en el comportamiento de la serie comparado con la serie original (Minitab, 2024). La tendencia creciente observada anteriormente ha sido eliminada completamente, y la serie diferenciada ahora fluctúa alrededor de una media constante cercana a cero como vemos en la figura 4 (Minitab, 2024; MathWorks, 2025).
+
+
+```{r diferenciacion, fig.width=10, fig.height=6, out.width='100%'}
+
+library(plotly)
+library(xts)
+library(scales)
+
+css_colors <- list(
+  oro_premium = "#D4AF37",
+  oro_lujo = "#FFD700", 
+  oro_antiguo = "#B8860B",
+  fondo_negro = "#0A0A0A",
+  panel_negro = "#1A1A1A",
+  grilla_oscura = "#2C2C2C",
+  texto_claro = "#FFF8DC",
+  texto_oro = "#D4AF37"
+)
+
+dif1serie <- diff(ventana) %>% na.omit()
+
+grafica_dif1serie_dinamica <- function(dif1serie) {
+  
+  if(inherits(dif1serie, "xts")) {
+    df <- data.frame(
+      Fecha = as.Date(index(dif1serie)), 
+      Cambio = as.numeric(coredata(dif1serie))
+    )
+  } 
+  else if(inherits(dif1serie, "zoo")) {
+    df <- data.frame(
+      Fecha = as.Date(time(dif1serie)),  
+      Cambio = as.numeric(coredata(dif1serie))
+    )
+  }
+  else {
+    df <- as.data.frame(dif1serie)
+    if(!inherits(df$Fecha, "Date")) {
+      df$Fecha <- as.Date(df$Fecha)
+    }
+  }
+  
+  media_cambio <- mean(df$Cambio, na.rm = TRUE)
+  desv_cambio <- sd(df$Cambio, na.rm = TRUE)
+  max_cambio <- max(df$Cambio, na.rm = TRUE)
+  min_cambio <- min(df$Cambio, na.rm = TRUE)
+  positivo <- sum(df$Cambio > 0, na.rm = TRUE)
+  negativo <- sum(df$Cambio < 0, na.rm = TRUE)
+  neutro <- sum(df$Cambio == 0, na.rm = TRUE)
+  
+  df$Color <- ifelse(df$Cambio > 0, css_colors$oro_lujo,
+                     ifelse(df$Cambio < 0, css_colors$oro_antiguo, css_colors$texto_claro))
+  
+  fig <- plot_ly(df, x = ~Fecha)
+  
+  fig <- fig %>%
+    add_bars(
+      y = ~Cambio,
+      marker = list(
+        color = ~Color,
+        line = list(color = css_colors$oro_premium, width = 1)
+      ),
+      name = "Cambio Diario",
+      hovertemplate = paste(
+        "<b>Cambio Diario</b><br>",
+        "Fecha: %{x|%d-%b-%Y}<br>",
+        "Cambio: %{y:.2f} pts<br>",
+        "<extra></extra>"
+      )
+    )
+  
+  fig <- fig %>%
+    add_lines(
+      y = rep(0, nrow(df)),
+      x = ~Fecha,
+      name = "Línea Cero",
+      line = list(color = css_colors$texto_claro, width = 1, dash = "dash"),
+      hovertemplate = "Línea Cero<extra></extra>"
+    ) %>%
+    add_lines(
+      y = rep(media_cambio, nrow(df)),
+      x = ~Fecha,
+      name = "Media Cambios",
+      line = list(color = css_colors$oro_premium, width = 1.5, dash = "dot"),
+      hovertemplate = paste("Media: ", round(media_cambio, 2), "<extra></extra>")
+    ) %>%
+    add_lines(
+      y = rep(media_cambio + desv_cambio, nrow(df)),
+      x = ~Fecha,
+      name = "+1 Desviación",
+      line = list(color = alpha(css_colors$oro_lujo, 0.5), width = 1, dash = "dash"),
+      hovertemplate = paste("+1σ: ", round(media_cambio + desv_cambio, 2), "<extra></extra>")
+    ) %>%
+    add_lines(
+      y = rep(media_cambio - desv_cambio, nrow(df)),
+      x = ~Fecha,
+      name = "-1 Desviación",
+      line = list(color = alpha(css_colors$oro_antiguo, 0.5), width = 1, dash = "dash"),
+      hovertemplate = paste("-1σ: ", round(media_cambio - desv_cambio, 2), "<extra></extra>")
+    )
+  
+  fig <- fig %>%
+    add_markers(
+      data = df[which.max(df$Cambio), ],
+      x = ~Fecha,
+      y = ~Cambio,
+      name = "Mayor Alza",
+      marker = list(
+        color = css_colors$oro_lujo,
+        size = 12,
+        symbol = "star",
+        line = list(color = css_colors$oro_premium, width = 2)
+      ),
+      hovertemplate = paste(
+        "<b>MAYOR ALZA</b><br>",
+        "Fecha: %{x|%d-%b-%Y}<br>",
+        "Cambio: %{y:.2f} pts<br>",
+        "<extra></extra>"
+      )
+    ) %>%
+    add_markers(
+      data = df[which.min(df$Cambio), ],
+      x = ~Fecha,
+      y = ~Cambio,
+      name = "Mayor Baja",
+      marker = list(
+        color = css_colors$oro_antiguo,
+        size = 12,
+        symbol = "star",
+        line = list(color = css_colors$oro_premium, width = 2)
+      ),
+      hovertemplate = paste(
+        "<b>MAYOR BAJA</b><br>",
+        "Fecha: %{x|%d-%b-%Y}<br>",
+        "Cambio: %{y:.2f} pts<br>",
+        "<extra></extra>"
+      )
+    )
+  
+  fig <- fig %>%
+    layout(
+      title = list(
+        text = paste(
+          "<span style='font-family:Cinzel; color:#D4AF37; font-size:24px;'>",
+          "Figura 4. - Serie diferenciada (ΔYₜ = Yₜ - Yₜ₋₁)</span><br>",
+          "<span style='font-family:Playfair Display; color:#FFF8DC; font-size:16px;'>",
+          "Cambios Diarios | Estacionariedad | Volatilidad</span>"
+        ),
+        x = 0.5,
+        xanchor = 'center'
+      ),
+      
+      xaxis = list(
+        title = list(
+          text = "<b>FECHA</b>",
+          font = list(family = 'Cinzel', color = css_colors$oro_premium, size = 14)
+        ),
+        gridcolor = css_colors$grilla_oscura,
+        linecolor = css_colors$oro_premium,
+        tickfont = list(family = 'Inter', color = css_colors$texto_claro, size = 11),
+        showgrid = TRUE,
+        showline = TRUE,
+        zeroline = FALSE,
+        type = "date",
+        tickformat = "%b %Y"
+      ),
+      
+      yaxis = list(
+        title = list(
+          text = "<b>CAMBIO DIARIO (PUNTOS)</b>",
+          font = list(family = 'Cinzel', color = css_colors$oro_premium, size = 14)
+        ),
+        gridcolor = css_colors$grilla_oscura,
+        tickfont = list(family = 'Inter', color = css_colors$texto_claro, size = 11),
+        linecolor = css_colors$oro_premium,
+        zerolinecolor = css_colors$grilla_oscura,
+        showline = TRUE,
+        zeroline = FALSE,
+        tickformat = ",.2f"
+      ),
+      
+      plot_bgcolor = css_colors$fondo_negro,
+      paper_bgcolor = css_colors$fondo_negro,
+      
+      hoverlabel = list(
+        bgcolor = 'rgba(26, 26, 26, 0.9)',
+        bordercolor = css_colors$oro_premium,
+        font = list(family = 'Inter', color = css_colors$texto_claro, size = 11)
+      ),
+      
+      margin = list(l = 80, r = 80, t = 120, b = 100),
+      
+      legend = list(
+        orientation = 'h',
+        x = 0.5,
+        xanchor = 'center',
+        y = -0.25,
+        bgcolor = 'rgba(26, 26, 26, 0.8)',
+        font = list(family = 'Cinzel', color = css_colors$oro_premium, size = 12),
+        bordercolor = css_colors$oro_premium,
+        borderwidth = 1
+      ),
+      
+      annotations = list(
+        list(
+          x = 0.5,
+          y = 1.05,
+          xref = "paper",
+          yref = "paper",
+          text = paste(
+            "Estadísticas: ",
+            "Media: ", round(media_cambio, 3), 
+            " | Desv: ", round(desv_cambio, 3),
+            " | Positivos: ", positivo, 
+            " | Negativos: ", negativo,
+            " | Neutros: ", neutro
+          ),
+          showarrow = FALSE,
+          font = list(family = 'Playfair Display', size = 12, color = css_colors$texto_claro),
+          bgcolor = 'rgba(26, 26, 26, 0.7)',
+          bordercolor = css_colors$oro_premium,
+          borderwidth = 1,
+          borderpad = 8
+        )
+      ),
+      
+      shapes = list(
+        list(
+          type = 'rect',
+          x0 = min(df$Fecha),
+          x1 = max(df$Fecha),
+          y0 = media_cambio - desv_cambio,
+          y1 = media_cambio + desv_cambio,
+          fillcolor = 'rgba(212, 175, 55, 0.1)',
+          line = list(width = 0)
+        )
+      )
+    )
+  
+  return(fig)
+}
+
+grafica_dif1 <- grafica_dif1serie_dinamica(dif1serie)
+grafica_dif1
+```
+
+Este patrón de fluctuaciones alrededor de una media estable es característico de una serie estacionaria (Minitab, 2024; Wikipedia, 2007). Las oscilaciones representan los cambios diarios en el valor del índice COLCAP, reflejando la volatilidad natural del mercado sin la presencia de una deriva de largo plazo (Wikipedia, 2007). La amplitud de las fluctuaciones parece mantenerse relativamente constante a lo largo del tiempo, lo que sugiere homocedasticidad o varianza constante, otra propiedad fundamental de la estacionariedad (Minitab, 2024; NumXL, 2024).
+
+La Figura 5 muestra el correlograma de la función de autocorrelación (ACF) para la serie diferenciada. El gráfico presenta un cambio notable respecto al ACF de la serie original (LinkedIn, 2025). Ahora se observa un decaimiento rápido de las autocorrelaciones hacia cero, con la mayoría de los rezagos cayendo dentro de las bandas de confianza (líneas punteadas azules) después de los primeros rezagos (LinkedIn, 2025; Miranda, 2021).
+
+```{r ACF e hipotesis, fig.width=10, fig.height=6, out.width='100%'}
+library(plotly)
+library(forecast)
+
+css_acf <- list(
+  fondo_negro = "#0A0A0A",
+  panel_negro = "#1A1A1A",
+  grilla_oscura = "#2C2C2C",
+  oro_premium = "#D4AF37",
+  oro_lujo = "#FFD700",
+  oro_antiguo = "#B8860B",
+  luz_oro = "#FFF8DC",
+  puro_blanco = "#FFFFFF"
+)
+
+acf_dif_data <- Acf(dif1serie, lag.max = 40, plot = FALSE)
+confianza <- 2/sqrt(length(dif1serie))
+
+df_acf <- data.frame(
+  Lag = 0:40,
+  ACF = as.numeric(acf_dif_data$acf),
+  Significativo = abs(as.numeric(acf_dif_data$acf)) > confianza,
+  Color = ifelse(abs(as.numeric(acf_dif_data$acf)) > confianza, 
+                 css_acf$oro_lujo, css_acf$oro_premium)
+)
+
+df_acf <- df_acf %>% filter(Lag >= 1)
+
+max_acf <- max(abs(df_acf$ACF), na.rm = TRUE)
+y_range <- max(0.2, max_acf * 1.2)
+
+fig <- plot_ly(df_acf, x = ~Lag)
+
+fig <- fig %>%
+  add_bars(
+    y = ~ACF,
+    marker = list(
+      color = ~Color,
+      line = list(color = css_acf$oro_premium, width = 1.5)
+    ),
+    name = "ACF",
+    hovertemplate = paste(
+      "<b>Lag: %{x}</b><br>",
+      "ACF: %{y:.3f}<br>",
+      "<extra></extra>"
+    )
+  )
+
+fig <- fig %>%
+  add_trace(
+    x = c(0.5, 40.5),
+    y = c(confianza, confianza),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$oro_antiguo, dash = 'dash', width = 1.5),
+    name = 'Límite Superior',
+    hoverinfo = 'none'
+  ) %>%
+  add_trace(
+    x = c(0.5, 40.5),
+    y = c(-confianza, -confianza),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$oro_antiguo, dash = 'dash', width = 1.5),
+    name = 'Límite Inferior',
+    hoverinfo = 'none'
+  ) %>%
+  add_trace(
+    x = c(0.5, 40.5),
+    y = c(0, 0),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$luz_oro, width = 1),
+    name = 'Línea Cero',
+    hoverinfo = 'none'
+  )
+
+fig <- fig %>%
+  add_markers(
+    data = subset(df_acf, Significativo),
+    x = ~Lag,
+    y = ~ACF,
+    marker = list(
+      color = css_acf$oro_lujo,
+      size = 10,
+      symbol = 'diamond',
+      line = list(color = css_acf$oro_premium, width = 2)
+    ),
+    name = 'Significativo',
+    hovertemplate = paste(
+      "<b>¡SIGNIFICATIVO!</b><br>",
+      "Lag: %{x}<br>",
+      "ACF: %{y:.3f}<br>",
+      "<extra></extra>"
+    )
+  )
+
+fig <- fig %>%
+  layout(
+    title = list(
+      text = "<span style='font-family:Cinzel; color:#D4AF37; font-size:24px;'>
+              FUNCIÓN DE AUTOCORRELACIÓN (ACF) - SERIE DIFERENCIADA ICOLCAP</span><br>
+              <span style='font-family:Playfair Display; color:#FFF8DC; font-size:16px;'>
+              Análisis de dependencia temporal de la primera diferencia</span>",
+      x = 0.5,
+      xanchor = 'center'
+    ),
+    
+    xaxis = list(
+      title = list(
+        text = "<b>REZAGO (LAGS)</b>",
+        font = list(family = 'Cinzel', color = css_acf$oro_premium, size = 14)
+      ),
+      gridcolor = css_acf$grilla_oscura,
+      linecolor = css_acf$oro_premium,
+      tickfont = list(family = 'Inter', color = css_acf$luz_oro, size = 11),
+      zeroline = FALSE,
+      showgrid = TRUE,
+      range = c(0.5, 40.5),
+      dtick = 5
+    ),
+    
+    yaxis = list(
+      title = list(
+        text = "<b>COEFICIENTE ACF</b>",
+        font = list(family = 'Cinzel', color = css_acf$oro_premium, size = 14)
+      ),
+      gridcolor = css_acf$grilla_oscura,
+      linecolor = css_acf$oro_premium,
+      tickfont = list(family = 'Inter', color = css_acf$luz_oro, size = 11),
+      range = c(-y_range, y_range),
+      tickformat = '.3f',
+      zeroline = FALSE,
+      showgrid = TRUE,
+      tickvals = seq(-round(y_range, 1), round(y_range, 1), by = 0.05)
+    ),
+    
+    plot_bgcolor = css_acf$fondo_negro,
+    paper_bgcolor = css_acf$fondo_negro,
+    
+    hoverlabel = list(
+      bgcolor = 'rgba(26, 26, 26, 0.9)',
+      bordercolor = css_acf$oro_premium,
+      font = list(family = 'Inter', color = css_acf$luz_oro, size = 11)
+    ),
+    
+    margin = list(l = 80, r = 80, t = 120, b = 100),
+    
+    legend = list(
+      orientation = 'h',
+      x = 0.5,
+      xanchor = 'center',
+      y = -0.2,
+      bgcolor = 'rgba(0,0,0,0)',
+      font = list(family = 'Cinzel', color = css_acf$oro_premium, size = 12)
+    ),
+    
+    annotations = list(
+      list(
+        x = 1,
+        y = 1.05,
+        xref = 'paper',
+        yref = 'paper',
+        text = paste(
+          "Intervalo de confianza: 95%<br>",
+          "Lags analizados: 1-40<br>",
+          "N observaciones:", length(dif1serie), "<br>",
+          "Límite confianza: ±", round(confianza, 3)
+        ),
+        showarrow = FALSE,
+        align = 'right',
+        font = list(
+          family = 'Playfair Display',
+          size = 12,
+          color = css_acf$luz_oro
+        ),
+        bgcolor = 'rgba(26, 26, 26, 0.7)',
+        bordercolor = css_acf$oro_premium,
+        borderwidth = 1,
+        borderpad = 10
+      )
+    ),
+    
+    shapes = list(
+      list(
+        type = 'rect',
+        x0 = 0.5,
+        x1 = 40.5,
+        y0 = -confianza,
+        y1 = confianza,
+        fillcolor = 'rgba(212, 175, 55, 0.05)',
+        line = list(width = 0)
+      )
+    )
+  )
+
+fig
+```
+
+Este patrón de decaimiento rápido en la ACF es un indicador fuerte de estacionariedad en la serie diferenciada (LinkedIn, 2025; Miranda, 2021). A diferencia del decaimiento lento observado en la serie original, la serie diferenciada muestra autocorrelaciones que se aproximan rápidamente a cero, indicando que la dependencia temporal entre observaciones distantes es débil o inexistente (LinkedIn, 2025; UCM, 2013). Únicamente algunos rezagos iniciales presentan autocorrelaciones estadísticamente significativas (que exceden las bandas de confianza), lo cual es normal en series financieras y proporciona información valiosa para la identificación de los órdenes p y q del modelo ARIMA (Wikipedia, 2013; Universidad de Vigo, s.f.).
+
+El comportamiento del correlograma ACF sugiere que la diferenciación ha sido exitosa en remover la no estacionariedad presente en la serie original, transformándola en una serie con propiedades estadísticas estables a través del tiempo (Wikipedia, 2013; Miranda, 2021).
+
+```{r test 2}
+library(kableExtra)
+library(tseries)
+
+# Realizar prueba ADF en la serie diferenciada
+resultado_adf_dif1 <- adf.test(dif1serie)
+
+# Extraer valores
+df_valor <- sprintf("%.6f", resultado_adf_dif1$statistic)
+p_valor <- ifelse(resultado_adf_dif1$p.value < 0.001, "< 0.001", 
+                  sprintf("%.6f", resultado_adf_dif1$p.value))
+lags_valor <- resultado_adf_dif1$parameter
+n_obs <- length(dif1serie) - lags_valor
+
+# Configurar estilos
+es_significativo <- resultado_adf_dif1$p.value < 0.05
+color_p <- ifelse(es_significativo, "#D4AF37", "#FF6B6B")
+
+# Crear HTML para la tabla
+cat('
+<div style="
+  margin: 2rem auto;
+  padding: 0;
+  max-width: 800px;
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(42, 42, 42, 0.95) 100%);
+  border: 1px solid #D4AF37;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: fadeInLuxury 0.8s ease-out;
+">
+  
+  <!-- Encabezado de la tabla -->
+  <div style="
+    background: linear-gradient(135deg, #2C2C2C 0%, #1A1A1A 100%);
+    padding: 20px;
+    border-bottom: 2px solid #D4AF37;
+  ">
+    <h3 style="
+      font-family: \'Cinzel\', serif;
+      color: #D4AF37;
+      text-align: center;
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 1px;
+    ">
+      RESULTADOS PRUEBA ADF - SERIE DIFERENCIADA
+    </h3>
+    <p style="
+      font-family: \'Inter\', sans-serif;
+      color: #F5F5F5;
+      text-align: center;
+      margin: 5px 0 0 0;
+      font-size: 14px;
+    ">
+      Augmented Dickey-Fuller Test en Δ¹(serie)
+    </p>
+  </div>
+  
+  <!-- Contenido de la tabla -->
+  <table style="
+    width: 100%;
+    border-collapse: collapse;
+    font-family: \'Inter\', sans-serif;
+  ">
+    <!-- Encabezados de columna -->
+    <thead>
+      <tr>
+        <th style="
+          background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+          color: #0A0A0A;
+          padding: 16px;
+          text-align: left;
+          font-family: \'Cinzel\', serif;
+          font-weight: 700;
+          font-size: 16px;
+          border-right: 1px solid rgba(10, 10, 10, 0.3);
+        ">
+          Estadístico
+        </th>
+        <th style="
+          background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+          color: #0A0A0A;
+          padding: 16px;
+          text-align: center;
+          font-family: \'Cinzel\', serif;
+          font-weight: 700;
+          font-size: 16px;
+          border-right: 1px solid rgba(10, 10, 10, 0.3);
+        ">
+          Valor
+        </th>
+        <th style="
+          background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+          color: #0A0A0A;
+          padding: 16px;
+          text-align: left;
+          font-family: \'Cinzel\', serif;
+          font-weight: 700;
+          font-size: 16px;
+        ">
+          Interpretación
+        </th>
+      </tr>
+    </thead>
+    
+    <!-- Cuerpo de la tabla -->
+    <tbody>
+      <!-- Fila 1: Dickey-Fuller -->
+      <tr style="background-color: #1A1A1A;">
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          color: #D4AF37;
+          font-weight: 600;
+          font-family: \'Cinzel\', serif;
+        ">
+          Dickey-Fuller Aumentado
+        </td>
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          text-align: center;
+          color: #FFFFFF;
+          font-weight: 700;
+          font-size: 16px;
+        ">
+          ', df_valor, '
+        </td>
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          color: #E0E0E0;
+        ">
+          Estadístico de prueba para H₀: raíz unitaria en Δ¹(serie)
+        </td>
+      </tr>
+      
+      <!-- Fila 2: Valor p -->
+      <tr style="background-color: #2C2C2C;">
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          color: #D4AF37;
+          font-weight: 600;
+          font-family: \'Cinzel\', serif;
+        ">
+          Valor p
+        </td>
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          text-align: center;
+          color: #FFFFFF;
+          font-weight: 700;
+          font-size: 16px;
+        ">
+          ', p_valor, '
+        </td>
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          color: ', color_p, ';
+          font-weight: ', ifelse(es_significativo, "700", "400"), ';
+        ">
+          ', ifelse(es_significativo, "✓ Significativo (rechaza H₀)", "✗ No significativo"), '
+        </td>
+      </tr>
+      
+      <!-- Fila 3: Lags -->
+      <tr style="background-color: #1A1A1A;">
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          color: #D4AF37;
+          font-weight: 600;
+          font-family: \'Cinzel\', serif;
+        ">
+          Retrasos (Lags)
+        </td>
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          text-align: center;
+          color: #FFFFFF;
+          font-weight: 700;
+          font-size: 16px;
+        ">
+          ', lags_valor, '
+        </td>
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          color: #E0E0E0;
+        ">
+          Número de retardos utilizados en la regresión
+        </td>
+      </tr>
+      
+      <!-- Fila 4: Observaciones -->
+      <tr style="background-color: #2C2C2C;">
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          color: #D4AF37;
+          font-weight: 600;
+          font-family: \'Cinzel\', serif;
+        ">
+          Observaciones
+        </td>
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          text-align: center;
+          color: #FFFFFF;
+          font-weight: 700;
+          font-size: 16px;
+        ">
+          ', n_obs, '
+        </td>
+        <td style="
+          padding: 14px 16px;
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+          color: #E0E0E0;
+        ">
+          Tamaño efectivo de muestra analizada
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <!-- Sección de conclusión -->
+  <div style="
+    padding: 20px;
+    background: rgba(26, 26, 26, 0.8);
+    border-top: 1px solid #D4AF37;
+  ">
+    <div style="
+      background: rgba(212, 175, 55, 0.1);
+      border-left: 4px solid ', color_p, ';
+      padding: 15px;
+      border-radius: 0 4px 4px 0;
+    ">
+      <div style="
+        color: #D4AF37;
+        font-family: \'Cinzel\', serif;
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 8px;
+      ">
+        Hipótesis Nula (H₀):
+      </div>
+      <div style="
+        color: #F5F5F5;
+        font-family: \'Inter\', sans-serif;
+        margin-bottom: 15px;
+      ">
+        La primera diferencia de la serie (Δ¹) tiene una raíz unitaria (no es estacionaria)
+      </div>
+      <div style="
+        color: #D4AF37;
+        font-family: \'Cinzel\', serif;
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 8px;
+      ">
+        Conclusión:
+      </div>
+      <div style="
+        color: ', color_p, ';
+        font-family: \'Inter\', sans-serif;
+        font-weight: 700;
+        font-size: 17px;
+      ">
+        ', ifelse(es_significativo, "✓ Δ¹(serie) ES ESTACIONARIA", "✗ Δ¹(serie) NO ES ESTACIONARIA"), '
+        <span style="color: #F5F5F5; font-weight: 400; font-size: 15px;">
+          ', ifelse(es_significativo, "(Se rechaza H₀ - Primera diferencia estacionaria)", 
+                    "(No se rechaza H₀ - Se requiere mayor diferenciación)"), '
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+')
+```
+
+
+Para confirmar formalmente la estacionariedad de la serie diferenciada, se aplicó nuevamente la prueba de Dickey-Fuller Aumentada (ADF). Los resultados de esta prueba en la serie diferenciada contrastan marcadamente con los obtenidos para la serie original (NumXL, 2024; Minitab, 2024).
+
+En esta ocasión, el valor p de la prueba ADF es menor que el nivel de significancia de 0.05, lo que conduce a rechazar la hipótesis nula de presencia de raíz unitaria (Minitab, 2024; NumXL, 2024). Esta decisión estadística proporciona evidencia robusta de que la serie diferenciada es estacionaria (Minitab, 2024; NumXL, 2024). El estadístico de prueba también resulta significativamente menor que los valores críticos tabulados, reforzando la conclusión de estacionariedad (NumXL, 2024).
+
+Este resultado confirma que la diferenciación de primer orden fue suficiente para transformar la serie no estacionaria del COLCAP en una serie estacionaria adecuada para el modelado ARIMA (Wikipedia, 2013; Minitab, 2024). La evidencia estadística formal de la prueba ADF, junto con la evidencia visual del gráfico de la serie diferenciada y el comportamiento del correlograma ACF, permiten concluir con confianza que la serie cumple ahora con los requisitos de estacionariedad (Wikipedia, 2013).
+
+Por lo tanto, el parámetro de integración del modelo ARIMA se establece en d=1, indicando que se requiere una diferenciación para lograr estacionariedad (Wikipedia, 2013; DataCamp, 2024). Con esta transformación completada satisfactoriamente, se puede proceder a identificar los órdenes de los componentes autorregresivo (p) y de media móvil (q) mediante el análisis conjunto de las funciones de autocorrelación (ACF) y autocorrelación parcial (PACF) de la serie diferenciada (Wikipedia, 2013; UCM, 2013).
+
+## Identificación de los Órdenes p y q mediante ACF y PACF
+
+Una vez confirmada la estacionariedad de la serie diferenciada, se procedió a identificar los órdenes de los componentes autorregresivo (p) y de media móvil (q) del modelo ARIMA mediante el análisis conjunto de las funciones de autocorrelación (ACF) y autocorrelación parcial (PACF) (Wikipedia, 2013; Minitab, 2024).
+
+La Figura 5 presenta los correlogramas de ACF y PACF de la serie diferenciada, dispuestos lado a lado para facilitar su comparación y análisis simultáneo. Estos gráficos constituyen herramientas fundamentales en la metodología de Box-Jenkins para determinar la estructura apropiada del modelo ARIMA (Wikipedia, 2013; DataCamp, 2024).
+
+```{r ACF VS PACF, fig.width=10, fig.height=6, out.width='100%'}
+library(plotly)
+library(forecast)
+
+css_acf <- list(
+  fondo_negro = "#0A0A0A",
+  panel_negro = "#1A1A1A",
+  grilla_oscura = "#2C2C2C",
+  oro_premium = "#D4AF37",
+  oro_lujo = "#FFD700",
+  oro_antiguo = "#B8860B",
+  luz_oro = "#FFF8DC",
+  puro_blanco = "#FFFFFF"
+)
+
+acf_dif_data <- Acf(dif1serie, lag.max = 20, plot = FALSE)
+pacf_dif_data <- Pacf(dif1serie, lag.max = 20, plot = FALSE)
+confianza <- 2/sqrt(length(dif1serie))
+
+df_acf <- data.frame(
+  Lag = 0:20,
+  ACF = as.numeric(acf_dif_data$acf),
+  Significativo = abs(as.numeric(acf_dif_data$acf)) > confianza,
+  Tipo = "ACF"
+)
+
+df_pacf <- data.frame(
+  Lag = 1:20,
+  ACF = as.numeric(pacf_dif_data$acf),
+  Significativo = abs(as.numeric(pacf_dif_data$acf)) > confianza,
+  Tipo = "PACF"
+)
+
+df_acf <- df_acf %>% filter(Lag >= 1)
+
+max_abs_acf <- max(abs(df_acf$ACF), na.rm = TRUE)
+max_abs_pacf <- max(abs(df_pacf$ACF), na.rm = TRUE)
+max_abs <- max(max_abs_acf, max_abs_pacf, 0.2)
+y_range <- max_abs * 1.2
+
+fig_acf <- plot_ly(df_acf, x = ~Lag) %>%
+  add_bars(
+    y = ~ACF,
+    marker = list(
+      color = ~ifelse(Significativo, css_acf$oro_lujo, css_acf$oro_premium),
+      line = list(color = css_acf$oro_premium, width = 1.5)
+    ),
+    name = "ACF",
+    hovertemplate = paste(
+      "<b>Lag: %{x}</b><br>",
+      "ACF: %{y:.3f}<br>",
+      "<extra></extra>"
+    )
+  ) %>%
+  add_trace(
+    x = c(0.5, 20.5),
+    y = c(confianza, confianza),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$oro_antiguo, dash = 'dash', width = 1.5),
+    name = 'Límite Superior',
+    hoverinfo = 'none'
+  ) %>%
+  add_trace(
+    x = c(0.5, 20.5),
+    y = c(-confianza, -confianza),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$oro_antiguo, dash = 'dash', width = 1.5),
+    name = 'Límite Inferior',
+    hoverinfo = 'none'
+  ) %>%
+  add_trace(
+    x = c(0.5, 20.5),
+    y = c(0, 0),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$luz_oro, width = 1),
+    name = 'Línea Cero',
+    hoverinfo = 'none'
+  ) %>%
+  layout(
+    title = list(
+      text = "<span style='font-family:Cinzel; color:#D4AF37; font-size:20px;'>ACF - Serie Diferenciada</span>",
+      x = 0.5
+    ),
+    xaxis = list(
+      title = "REZAGO (LAGS)",
+      gridcolor = css_acf$grilla_oscura,
+      linecolor = css_acf$oro_premium,
+      tickfont = list(family = 'Inter', color = css_acf$luz_oro, size = 11),
+      zeroline = FALSE,
+      showgrid = TRUE,
+      range = c(0.5, 20.5),
+      dtick = 5
+    ),
+    yaxis = list(
+      title = "COEFICIENTE ACF",
+      gridcolor = css_acf$grilla_oscura,
+      linecolor = css_acf$oro_premium,
+      tickfont = list(family = 'Inter', color = css_acf$luz_oro, size = 11),
+      range = c(-y_range, y_range),
+      tickformat = '.3f',
+      zeroline = FALSE,
+      showgrid = TRUE
+    ),
+    plot_bgcolor = css_acf$fondo_negro,
+    paper_bgcolor = css_acf$fondo_negro,
+    hoverlabel = list(
+      bgcolor = 'rgba(26, 26, 26, 0.9)',
+      bordercolor = css_acf$oro_premium,
+      font = list(family = 'Inter', color = css_acf$luz_oro, size = 11)
+    ),
+    margin = list(l = 60, r = 30, t = 80, b = 60),
+    showlegend = FALSE
+  )
+
+fig_pacf <- plot_ly(df_pacf, x = ~Lag) %>%
+  add_bars(
+    y = ~ACF,
+    marker = list(
+      color = ~ifelse(Significativo, css_acf$oro_lujo, css_acf$oro_premium),
+      line = list(color = css_acf$oro_premium, width = 1.5)
+    ),
+    name = "PACF",
+    hovertemplate = paste(
+      "<b>Lag: %{x}</b><br>",
+      "PACF: %{y:.3f}<br>",
+      "<extra></extra>"
+    )
+  ) %>%
+  add_trace(
+    x = c(0.5, 20.5),
+    y = c(confianza, confianza),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$oro_antiguo, dash = 'dash', width = 1.5),
+    name = 'Límite Superior',
+    hoverinfo = 'none'
+  ) %>%
+  add_trace(
+    x = c(0.5, 20.5),
+    y = c(-confianza, -confianza),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$oro_antiguo, dash = 'dash', width = 1.5),
+    name = 'Límite Inferior',
+    hoverinfo = 'none'
+  ) %>%
+  add_trace(
+    x = c(0.5, 20.5),
+    y = c(0, 0),
+    type = 'scatter',
+    mode = 'lines',
+    line = list(color = css_acf$luz_oro, width = 1),
+    name = 'Línea Cero',
+    hoverinfo = 'none'
+  ) %>%
+  layout(
+    title = list(
+      text = "<span style='font-family:Cinzel; color:#D4AF37; font-size:20px;'>PACF - Serie Diferenciada</span>",
+      x = 0.5
+    ),
+    xaxis = list(
+      title = "REZAGO (LAGS)",
+      gridcolor = css_acf$grilla_oscura,
+      linecolor = css_acf$oro_premium,
+      tickfont = list(family = 'Inter', color = css_acf$luz_oro, size = 11),
+      zeroline = FALSE,
+      showgrid = TRUE,
+      range = c(0.5, 20.5),
+      dtick = 5
+    ),
+    yaxis = list(
+      title = "COEFICIENTE PACF",
+      gridcolor = css_acf$grilla_oscura,
+      linecolor = css_acf$oro_premium,
+      tickfont = list(family = 'Inter', color = css_acf$luz_oro, size = 11),
+      range = c(-y_range, y_range),
+      tickformat = '.3f',
+      zeroline = FALSE,
+      showgrid = TRUE
+    ),
+    plot_bgcolor = css_acf$fondo_negro,
+    paper_bgcolor = css_acf$fondo_negro,
+    hoverlabel = list(
+      bgcolor = 'rgba(26, 26, 26, 0.9)',
+      bordercolor = css_acf$oro_premium,
+      font = list(family = 'Inter', color = css_acf$luz_oro, size = 11)
+    ),
+    margin = list(l = 60, r = 30, t = 80, b = 60),
+    showlegend = FALSE
+  )
+
+fig_combinado <- subplot(fig_acf, fig_pacf, 
+                         nrows = 1, 
+                         shareY = TRUE,
+                         titleX = TRUE,
+                         titleY = TRUE) %>%
+  layout(
+    title = list(
+      text = "<span style='font-family:Cinzel; color:#D4AF37; font-size:24px;'>
+              ANÁLISIS ACF y PACF - SERIE DIFERENCIADA ICOLCAP</span><br>
+              <span style='font-family:Playfair Display; color:#FFF8DC; font-size:16px;'>
+              Identificación de modelos ARIMA</span>",
+      x = 0.5,
+      y = 0.95
+    ),
+    annotations = list(
+      list(
+        x = 0.5,
+        y = 1.02,
+        xref = "paper",
+        yref = "paper",
+        text = paste(
+          "Intervalo de confianza: 95% |",
+          "Lags analizados: 20 |",
+          "N observaciones:", length(dif1serie), "|",
+          "Límite confianza: ±", round(confianza, 3)
+        ),
+        showarrow = FALSE,
+        font = list(
+          family = 'Playfair Display',
+          size = 12,
+          color = css_acf$luz_oro
+        ),
+        bgcolor = 'rgba(26, 26, 26, 0.7)',
+        bordercolor = css_acf$oro_premium,
+        borderwidth = 1,
+        borderpad = 8
+      )
+    ),
+    plot_bgcolor = css_acf$fondo_negro,
+    paper_bgcolor = css_acf$fondo_negro,
+    margin = list(l = 60, r = 60, t = 120, b = 80)
+  )
+
+fig_combinado
+```
+
+### Interpretación del Gráfico ACF
+
+El gráfico de la función de autocorrelación (ACF) muestra el patrón de correlaciones entre la serie y sus valores rezagados (Minitab, 2024). En el correlograma ACF de la serie diferenciada del COLCAP se observa que los dos primeros rezagos (lag 1 y lag 2) presentan autocorrelaciones significativas, evidenciadas por barras que exceden las bandas de confianza (líneas punteadas azules) (Minitab, 2024; Enrdados, 2020). Específicamente, el rezago 1 muestra una autocorrelación positiva significativa, mientras que el rezago 2 también supera el umbral de significancia (Minitab, 2024).
+
+A partir del rezago 3 en adelante, las autocorrelaciones caen dentro de las bandas de confianza y fluctúan alrededor de cero, lo que indica que no son estadísticamente diferentes de cero (Minitab, 2024; Enrdados, 2020). Este patrón de corte abrupto después de los primeros dos rezagos sugiere la presencia de un componente de media móvil (MA) en los datos (Minitab, 2024; Ciencia de Datos, 2025).
+
+Según las reglas de identificación de modelos ARIMA, cuando la ACF muestra correlaciones significativas solamente en los primeros q rezagos, seguidas por correlaciones no significativas, esto indica un término de media móvil de orden q (Minitab, 2024; Enrdados, 2020). En este caso, la evidencia sugiere un modelo MA(2), dado que los dos primeros rezagos son significativos antes del corte (DataCamp, 2024; Ciencia de Datos, 2025).
+
+### Interpretación del Gráfico PACF
+El gráfico de la función de autocorrelación parcial (PACF) mide la correlación entre observaciones separadas por k períodos después de controlar por la influencia de los rezagos intermedios (Minitab, 2024; LinkedIn, 2025). En el correlograma PACF de la serie diferenciada del COLCAP se observa que los dos primeros rezagos (lag 1 y lag 2) presentan autocorrelaciones parciales significativas, con barras que sobrepasan las bandas de confianza (Minitab, 2024).
+
+El rezago 1 muestra una autocorrelación parcial positiva y significativa, mientras que el rezago 2 también excede los límites de significancia (Minitab, 2024; LinkedIn, 2025). A partir del rezago 3, las autocorrelaciones parciales caen dentro de las bandas de confianza y oscilan alrededor de cero, indicando que no son estadísticamente significativas (Minitab, 2024).
+
+Este patrón de corte después del segundo rezago es característico de un proceso autorregresivo (AR) (Minitab, 2024; Enrdados, 2020). Según la teoría de identificación ARIMA, cuando la PACF muestra correlaciones significativas en los primeros p rezagos seguidas de correlaciones no significativas, esto indica un término autorregresivo de orden p (Minitab, 2024; Ciencia de Datos, 2025). La evidencia del correlograma PACF sugiere un modelo AR(2), dado que hay dos rezagos significativos antes del corte (DataCamp, 2024; Enrdados, 2020).
+
+Modelos Candidatos Identificados
+Basándose en el análisis de los correlogramas ACF y PACF, se identificaron dos modelos candidatos principales para la serie temporal del COLCAP (Wikipedia, 2013; Ciencia de Datos, 2025):
+
+1. ARIMA(2,1,0): Este modelo incorpora un componente autorregresivo de orden 2, sugerido por el patrón de corte en el PACF después del segundo rezago (Minitab, 2024; Enrdados, 2020). La notación (2,1,0) indica que el modelo incluye dos términos autorregresivos (p=2), requiere una diferenciación para alcanzar estacionariedad (d=1), y no incluye términos de media móvil (q=0) (Wikipedia, 2013; DataCamp, 2024).
+
+2. ARIMA(0,1,2): Este modelo incorpora un componente de media móvil de orden 2, sugerido por el patrón de corte en el ACF después del segundo rezago (Minitab, 2024; Ciencia de Datos, 2025). La notación (0,1,2) indica que el modelo no incluye términos autorregresivos (p=0), requiere una diferenciación (d=1), e incluye dos términos de media móvil (q=2) (Wikipedia, 2013; DataCamp, 2024).
+
+Ambos modelos son plausibles desde la perspectiva teórica, ya que los patrones observados en ACF y PACF presentan características que justifican tanto la especificación AR como MA (Enrdados, 2020; Ciencia de Datos, 2025). La decisión sobre cuál de estos modelos es más apropiado se determinará en la siguiente etapa de la metodología de Box-Jenkins mediante la estimación de parámetros y la comparación de criterios de información como AIC, AICc y BIC, así como el análisis de residuales (Wikipedia, 2013; Minitab, 2024).
+
+Es importante señalar que la identificación de modelos ARIMA mediante ACF y PACF constituye un arte tanto como una ciencia, y en ocasiones múltiples modelos pueden parecer razonables basándose en estos correlogramas (Enrdados, 2020; Reddit, 2016). Por ello, la selección final del modelo óptimo requiere la evaluación formal de las métricas de bondad de ajuste y el diagnóstico de residuales, aspectos que se abordarán en las secciones subsiguientes (Wikipedia, 2013; DataCamp, 2024).
+
+## Segunda etapa
+
+Una vez identificados los órdenes provisionales de los componentes autorregresivo (p) y de media móvil (q) mediante el análisis conjunto de los correlogramas ACF y PACF, se procedió con la segunda etapa de la metodología de Box-Jenkins: la estimación de parámetros (Wikipedia, 2013; Estadística.net, s.f.). En esta etapa se estimaron cuatro modelos alternativos con diferentes especificaciones de p y q, manteniendo constante el parámetro de integración d=1, confirmado en la etapa anterior (DataCamp, 2024).
+
+```{r Autoarima y modelos}
+modelo1 <- Arima(ventana, order = c(3,1,0)) # Modelo de autoarima
+
+modelo2 <- Arima(ventana, order = c(0,1,2))
+
+modelo3 <- Arima(ventana, order = c(2,1,0))
+
+modelo4 <- Arima(ventana, order = c(0,1,3))
+
+
+library(kableExtra)
+
+# Crear data frame simple
+df_comparacion <- data.frame(
+  Modelo = c("Modelo 1", "Modelo 2", "Modelo 3", "Modelo 4"),
+  Orden = c(
+    paste0("ARIMA(", modelo1$arma[1], ",", modelo1$arma[6], ",", modelo1$arma[2], ")"),
+    paste0("ARIMA(", modelo2$arma[1], ",", modelo2$arma[6], ",", modelo2$arma[2], ")"),
+    paste0("ARIMA(", modelo3$arma[1], ",", modelo3$arma[6], ",", modelo3$arma[2], ")"),
+    paste0("ARIMA(", modelo4$arma[1], ",", modelo4$arma[6], ",", modelo4$arma[2], ")")
+  ),
+  AIC = round(c(AIC(modelo1), AIC(modelo2), AIC(modelo3), AIC(modelo4)), 3),
+  BIC = round(c(BIC(modelo1), BIC(modelo2), BIC(modelo3), BIC(modelo4)), 3),
+  LogLik = round(c(logLik(modelo1), logLik(modelo2), logLik(modelo3), logLik(modelo4)), 3),
+  Sigma2 = round(c(modelo1$sigma2, modelo2$sigma2, modelo3$sigma2, modelo4$sigma2), 6),
+  stringsAsFactors = FALSE
+)
+
+# Identificar mejores valores
+best_aic <- which.min(df_comparacion$AIC)
+best_bic <- which.min(df_comparacion$BIC)
+best_loglik <- which.max(df_comparacion$LogLik)
+best_sigma2 <- which.min(df_comparacion$Sigma2)
+
+# TABLA 1: Versión simple y segura
+tabla_simple <- kable(df_comparacion, 
+                     align = c("l", "c", "r", "r", "r", "r"),
+                     col.names = c("Modelo", "Orden (p,d,q)", "AIC", "BIC", "Log-Likelihood", "σ²"),
+                     caption = "Tabla 1: Comparativa de Modelos ARIMA - Métricas de Ajuste") %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position = "center",
+    font_size = 14
+  ) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#D4AF37") %>%
+  row_spec(1:4, color = "#F5F5F5") %>%
+  row_spec(c(1, 3), background = "#1A1A1A") %>%
+  row_spec(c(2, 4), background = "#2C2C2C")
+
+# Aplicar colores de forma segura usando bucles
+for (i in 1:4) {
+  # Color para AIC
+  if (i == best_aic) {
+    tabla_simple <- tabla_simple %>% column_spec(3, color = "#D4AF37", bold = TRUE)
+  }
+  
+  # Color para BIC
+  if (i == best_bic) {
+    tabla_simple <- tabla_simple %>% column_spec(4, color = "#D4AF37", bold = TRUE)
+  }
+  
+  # Color para LogLik
+  if (i == best_loglik) {
+    tabla_simple <- tabla_simple %>% column_spec(5, color = "#D4AF37", bold = TRUE)
+  }
+  
+  # Color para Sigma2
+  if (i == best_sigma2) {
+    tabla_simple <- tabla_simple %>% column_spec(6, color = "#D4AF37", bold = TRUE)
+  }
+}
+
+# Color para nombres de modelos
+tabla_simple <- tabla_simple %>% column_spec(1, color = "#D4AF37", bold = TRUE)
+
+# Mostrar tabla
+tabla_simple
+```
+
+Estimación de Parámetros mediante Máxima Verosimilitud
+Los cuatro modelos estimados fueron los siguientes (Wikipedia, 2013; DataCamp, 2024):
+
+Modelo 1: ARIMA(3,1,0) - Resultado del algoritmo auto.arima
+
+Modelo 2: ARIMA(0,1,2) - Especificación de media móvil alternativa
+
+Modelo 3: ARIMA(2,1,0) - Especificación autorregresiva identificada en ACF/PACF
+
+Modelo 4: ARIMA(0,1,3) - Extensión de media móvil
+
+Para cada uno de estos modelos, se utilizó el método de máxima verosimilitud (MLE) para estimar los coeficientes autorregresivos y de media móvil, así como los errores estándar asociados con cada parámetro (Wikipedia, 2013; Ciencia de Datos, 2025; Estadística.net, s.f.). La máxima verosimilitud es el método estándar en la modelización ARIMA, ya que busca los valores de los parámetros que maximizan la probabilidad de observar los datos disponibles bajo el modelo propuesto (Wikipedia, 2008; DataCamp, 2024).
+
+Este procedimiento de estimación produce no solo los coeficientes estimados del modelo, sino también estadísticas de diagnóstico y criterios de información que permiten evaluar la calidad del ajuste relativo y la complejidad de cada especificación (Wikipedia, 2013; Ciencia de Datos, 2025).
+
+Criterios de Comparación de Modelos
+Con los cuatro modelos estimados, se procedió a comparar su desempeño relativo utilizando criterios de información estadística, que constituyen herramientas fundamentales en la metodología de Box-Jenkins para seleccionar el modelo óptimo (Wikipedia, 2013; LinkedIn, 2023; DataCamp, 2024).
+
+Criterio de Información de Akaike (AIC)
+El Criterio de Información de Akaike (AIC) es una medida que evalúa la bondad de ajuste del modelo penalizando simultáneamente por la complejidad (Ciencia de Datos, 2025; LinkedIn, 2023; IBM, s.f.). El AIC combina dos componentes: la verosimilitud del modelo (qué tan bien explica los datos) y una penalización por el número de parámetros estimados (Ciencia de Datos, 2025; IBM, s.f.). La penalización evita el sobreajuste, donde un modelo con demasiados parámetros podría adaptarse excesivamente a los datos de entrenamiento sin generalizar bien a nuevas observaciones (Ciencia de Datos, 2025; LinkedIn, 2023).
+
+La regla de decisión para AIC es simple: el modelo con el valor de AIC más bajo es preferible (Ciencia de Datos, 2025; LinkedIn, 2023; IBM, s.f.). Entre los cuatro modelos evaluados, se selecciona aquel que minimiza el AIC, ya que este balanceo entre ajuste y parsimonia lo hace más eficiente (Wikipedia, 2013; DataCamp, 2024).
+
+Criterio de Información Bayesiano (BIC)
+El Criterio de Información Bayesiano (BIC), también conocido como Criterio de Schwarz, es similar al AIC pero aplica una penalización más severa por la complejidad del modelo (Ciencia de Datos, 2025; LinkedIn, 2023; DataCamp, 2024). El BIC es particularmente útil cuando se busca una especificación más parsimoniosa (es decir, con fewer parámetros) en comparación con el AIC (Ciencia de Datos, 2025).
+
+Al igual que con el AIC, los valores más bajos del BIC indican mejor desempeño, pero dado que el BIC penaliza más fuertemente la complejidad, tiende a favorecer modelos con especificaciones más simples que el AIC (LinkedIn, 2023; Ciencia de Datos, 2025). En muchas situaciones de modelización ARIMA, los criterios AIC y BIC pueden sugerir modelos diferentes; por ello, es común reportar ambos criterios para proporcionar una visión integral de la comparación (Estadística.net, s.f.; DataCamp, 2024).
+
+Estrategia de Evaluación y Selección
+El procedimiento de comparación de modelos seguido en este análisis fue el siguiente (Amaris, 2017; Wikipedia, 2013):
+
+Estimación de todos los modelos candidatos utilizando máxima verosimilitud con los mismos datos de entrenamiento (Ciencia de Datos, 2025; Estadística.net, s.f.)
+
+Cálculo de criterios de información (AIC, BIC) para cada modelo estimado (LinkedIn, 2023; DataCamp, 2024)
+
+```{r tabla de comparaciones}
+
+```
+
+
+
+Ordenamiento de modelos por criterios para identificar aquellos con mejor ajuste relativo (Ciencia de Datos, 2025; Amaris, 2017)
+
+Análisis de residuales de los modelos con menor AIC/BIC para verificar su adecuación (Wikipedia, 2013; DataCamp, 2024; Estadística.net, s.f.)
+
+Esta aproximación multicriterio es recomendada en la literatura ARIMA, ya que permite evaluar simultáneamente la bondad de ajuste, la parsimonia, y la calidad diagnóstica de los residuales (Amaris, 2017; Ciencia de Datos, 2025).
+
+### Residuales
+
+
+### Análisis de Métricas de Desempeño y Selección del Modelo Óptimo
+
+
+Complementando el análisis de criterios de información (AIC y BIC) y el diagnóstico de residuales, se procedió a evaluar el desempeño predictivo de los modelos mediante un conjunto integral de métricas de accuracy que cuantifican la magnitud y naturaleza de los errores de pronóstico (Polmartisa, 2021; LinkedIn, 2023). Estas métricas proporcionan información complementaria desde diferentes perspectivas, permitiendo una evaluación multidimensional de la capacidad de predicción de cada modelo (Polmartisa, 2021).
+
+Métricas de Error Absoluto
+Error Medio (ME)
+El Error Medio (ME) representa el promedio de todos los errores de predicción sin aplicar transformaciones (Polmartisa, 2021; SlimStock, 2025). El ME es una métrica fundamental que permite evaluar si existe sesgo sistemático en las predicciones (Polmartisa, 2021). Un valor de ME cercano a cero indica que los errores positivos (sobrestimaciones) y negativos (subestimaciones) se compensan mutuamente, reflejando ausencia de tendencia sistemática en los errores (SlimStock, 2025; Polmartisa, 2021).
+
+Sin embargo, el ME presenta una limitación crítica: los errores de signo opuesto pueden cancelarse entre sí, ocultando la imprecisión real de las predicciones para observaciones individuales (Polmartisa, 2021). Por ello, aunque el ME es útil para detectar sesgo direccional, debe interpretarse en conjunción con otras métricas que capturan la magnitud de los errores (Polmartisa, 2021).
+
+Error Absoluto Medio (MAE)
+El Error Absoluto Medio (MAE) soluciona el problema de cancelación de errores al utilizar los valores absolutos de todos los errores de predicción (SlimStock, 2025; Polmartisa, 2021). El MAE proporciona el promedio de la magnitud absoluta de los errores, independientemente de su dirección (Polmartisa, 2021; Mora, 2023).
+
+Una ventaja distintiva del MAE es su robustez ante valores atípicos u outliers, ya que no penaliza desproporcionadamente los errores grandes (a diferencia del RMSE) (SlimStock, 2025; Polmartisa, 2021). El MAE se expresa en las mismas unidades que la variable predicha (puntos del índice COLCAP), facilitando su interpretación directa (Mora, 2023; LinkedIn, 2023). Valores menores de MAE indican mejor desempeño predictivo (Polmartisa, 2021).
+
+Raíz del Error Cuadrático Medio (RMSE)
+El Error Cuadrático Medio (RMSE) es una de las métricas más utilizadas en la predicción de series temporales (Mora, 2023; SlimStock, 2025). El RMSE calcula la raíz cuadrada del promedio de los errores elevados al cuadrado, produciendo una métrica que se interpreta como la desviación estándar de los residuales (Mora, 2023; Qlik, s.f.).
+
+Una característica importante del RMSE es que penaliza fuertemente los errores grandes, ya que el proceso de elevar al cuadrado amplifica los desvíos significativos (SlimStock, 2025; Polmartisa, 2021). Esta propiedad lo hace particularmente sensible a la presencia de predicciones muy inexactas en ciertos períodos (Polmartisa, 2021). El RMSE se expresa en las mismas unidades que la variable predicha, permitiendo una interpretación intuitiva (Qlik, s.f.).
+
+La relación entre MAE y RMSE proporciona información diagnóstica: cuando el RMSE es significativamente mayor que el MAE, esto indica la presencia de errores grandes que generan imprecisión, mientras que una relación cercana entre ambos sugiere mayor estabilidad en la precisión de las predicciones (Polmartisa, 2021; SlimStock, 2025).
+
+Métricas de Error Porcentual
+Error Porcentual Medio (MPE)
+El Error Porcentual Medio (MPE) expresa los errores como porcentajes de los valores reales observados (Polmartisa, 2021; LinkedIn, 2021). El MPE permite evaluar el sesgo direccional en términos porcentuales, indicando si el modelo tiende sistemáticamente a sobrestimar (MPE positivo) o subestimar (MPE negativo) los valores reales (Polmartisa, 2021; SlimStock, 2025).
+
+Similar al ME, el MPE adolece del problema de compensación de errores con signos opuestos, por lo que es más útil para detectar dirección del sesgo que para evaluar magnitud del error (Polmartisa, 2021). Un MPE cercano a cero es deseable e indica ausencia de sesgo sistemático en las predicciones (Polmartisa, 2021).
+
+Error Porcentual Absoluto Medio (MAPE)
+El Error Porcentual Absoluto Medio (MAPE) es quizás la métrica más interpretable y frecuentemente utilizada en la evaluación de modelos de pronóstico (SlimStock, 2025; Polmartisa, 2021; Mora, 2023). El MAPE calcula el promedio de los errores porcentuales absolutos, expresando la precisión del modelo como un porcentaje fácilmente comprensible (Polmartisa, 2021; SlimStock, 2025).
+
+Una ventaja fundamental del MAPE es que normaliza los errores respecto a la magnitud de los valores reales, permitiendo comparaciones significativas entre series con escalas diferentes (Polmartisa, 2021). Los criterios de interpretación son ampliamente aceptados en la industria (Polmartisa, 2021):
+
+MAPE < 10%: Desempeño excelente
+
+MAPE 10-20%: Desempeño bueno
+
+MAPE 20-50%: Desempeño aceptable
+
+MAPE > 50%: Desempeño pobre
+
+Sin embargo, el MAPE presenta limitaciones cuando los valores reales son cercanos a cero o cuando existen valores cero en la serie, ya que esto puede producir divisiones por cero o valores de MAPE arbitrariamente grandes (SlimStock, 2025; Polmartisa, 2021). Además, el MAPE penaliza asimétricamente la sobrestimación versus subestimación, produciendo mayores penalizaciones para sobrestimaciones (SlimStock, 2025).
+
+Métrica MASE: Comparación Relativa con Modelo Naive
+El Error Absoluto Escalado Medio (MASE) constituye una métrica particularmente reveladora que sitúa el desempeño del modelo ARIMA en perspectiva relativa (Qlik, s.f.; Polmartisa, 2021). El MASE compara el error absoluto medio (MAE) del modelo contra el MAE de un pronóstico ingenuo o "naive" que simplemente utiliza el último valor observado como predicción para todos los períodos futuros (Qlik, s.f.; Polmartisa, 2021).
+
+La interpretación del MASE es directa y poderosa (Qlik, s.f.):
+
+MASE < 1: El modelo ARIMA supera al pronóstico naive, constituyendo un modelo valioso
+
+MASE = 1: El modelo ARIMA tiene desempeño equivalente al pronóstico naive
+
+MASE > 1: El modelo ARIMA es inferior incluso a un simple pronóstico naive, sugiriendo que la especificación requiere revisión
+
+El MASE es particularmente útil en contextos financieros como la predicción de índices bursátiles, donde un benchmark natural es simplemente mantener el último precio observado como predicción del futuro (Polmartisa, 2021). Un MASE consistentemente menor que 1 proporciona justificación convincente para utilizar el modelo ARIMA en lugar de estrategias ingenuas (Qlik, s.f.).
+
+Estrategia de Evaluación Comparativa
+La evaluación integral de los tres modelos (Modelo 1: ARIMA(3,1,0), Modelo 2: ARIMA(0,1,2), Modelo 3: ARIMA(2,1,0)) se realizó examinando simultáneamente todas las métricas de desempeño (Polmartisa, 2021; Mora, 2023). Esta aproximación multimétrica es crítica porque cada indicador proporciona perspectivas complementarias sobre diferentes aspectos de la precisión predictiva:
+
+ME y MPE revelan la existencia de sesgos direccionales sistemáticos
+
+MAE y RMSE cuantifican la magnitud de los errores, con énfasis diferenciado en valores atípicos
+
+MAPE proporciona un porcentaje de error normalizado e interpretable
+
+MASE contextualiza el desempeño relativo respecto a un benchmark ingenuo
+
+Mediante la comparación de estas métricas de los tres modelos, se identifica el modelo con mejor balance entre precisión, estabilidad y parsimonia, seleccionando finalmente la especificación más apropiada para realizar los pronósticos del índice COLCAP con máxima confiabilidad (Polmartisa, 2021; Mora, 2023).
+
+La selección final del modelo se fundamenta en la convergencia de múltiples criterios: (1) criterios de información AIC y BIC más bajos, (2) residuales que cumplen criterios de ruido blanco con prueba Ljung-Box p-valor > 0.05, y (3) métricas de accuracy superiores respecto a los modelos competidores (Wikipedia, 2013; Polmartisa, 2021).
+
+```{r indicadores}
+accuracy(modelo1)
+accuracy(modelo2)
+accuracy(modelo3)
+accuracy(modelo4)
+```
+
+
+# Concluciones
 
 ::: academic-footer
 **Universidad del Valle** \| *Facultad de ingenieria* \| Gestion de datos
 :::
 
+at('
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  
+  // Barra de progreso mejorada
+  const progressBar = document.createElement("div");
+  progressBar.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--premium-gold), var(--luxury-gold));
+    z-index: 9999;
+    transition: width 0.2s ease;
+    box-shadow: 0 0 10px var(--premium-gold);
+  `;
+  document.body.appendChild(progressBar);
+  
+  window.addEventListener("scroll", function() {
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+    progressBar.style.width = scrollPercent + "%";
+  });
+  
+  // Animaciones de aparición suaves
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: "0px 0px -20px 0px"
+  };
+  
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = "1";
+        entry.target.style.transform = "translateY(0)";
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+  
+  // Aplicar animaciones a elementos principales
+  const animatedElements = document.querySelectorAll(
+    "h2, h3, .academic-table, pre.sourceCode, #TOC, .academic-footer, .highlight-box"
+  );
+  
+  animatedElements.forEach(el => {
+    el.style.opacity = "0";
+    el.style.transform = "translateY(20px)";
+    el.style.transition = "all 0.6s ease-out";
+    observer.observe(el);
+  });
+  
+  // Partículas doradas para la portada
+  const header = document.querySelector(".page-header");
+  if (header) {
+    for (let i = 0; i < 15; i++) {
+      setTimeout(() => {
+        const particle = document.createElement("div");
+        particle.innerHTML = "✦";
+        particle.style.position = "absolute";
+        particle.style.color = `rgba(212, 175, 55, ${Math.random() * 0.3 + 0.1})`;
+        particle.style.fontSize = (Math.random() * 20 + 10) + "px";
+        particle.style.left = Math.random() * 100 + "%";
+        particle.style.top = Math.random() * 100 + "%";
+        particle.style.animation = `elegantFloat ${Math.random() * 6 + 4}s ease-in-out infinite`;
+        particle.style.animationDelay = Math.random() * 2 + "s";
+        particle.style.zIndex = "2";
+        particle.style.pointerEvents = "none";
+        header.appendChild(particle);
+      }, i * 200);
+    }
+  }
+  
+  // Efectos hover mejorados
+  document.querySelectorAll(".code-toggle-btn, #TOC a, .academic-table tbody tr").forEach(el => {
+    el.addEventListener("mouseenter", function() {
+      this.style.transform = "translateY(-2px)";
+      this.style.boxShadow = "0 6px 20px rgba(212, 175, 55, 0.3)";
+    });
+    
+    el.addEventListener("mouseleave", function() {
+      this.style.transform = "translateY(0)";
+      this.style.boxShadow = "";
+    });
+  });
+  
+  console.log("✨ Diseño elegante dorado y negro cargado correctamente");
+});
+</script>
+')

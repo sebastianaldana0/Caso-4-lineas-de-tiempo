@@ -6,6 +6,9 @@ library(xts)
 library(fpp2)
 library(tseries)
 library(gridExtra)
+library(gt)
+library(dplyr)
+library(forecast)
 
 # Base de datos
 
@@ -20,9 +23,10 @@ accion<-Serie %>% na.omit()
 
 length(accion)
 
-ventana<-window(accion, end = "2024-06-06") # ventana de entrenamiento
-ventana2<-window(accion, start = "2024-06-07") # ventana de prueba
+ventana<-window(accion, end = ("2025-10-31")) # ventana de entrenamiento
+ventana2<-window(accion, start = ("2025-11-03")) # ventana de prueba
 
+length(ventana)
 # Graficos de ACF Y test de 
 
 autoplot(ventana)
@@ -37,7 +41,7 @@ autoplot(dif1serie)
 # Grafico de la nueva seria diferenciada
 
 ggAcf(dif1serie)
-adf.test(dis1serie)
+adf.test(dif1serie)
 
 # ACF VS PACF
 
@@ -49,15 +53,17 @@ grid.arrange(ggAcf(dif1serie),
 # Autoarima
 
 auto.arima(ventana)
-# (2,1,1)
+# (3,1,0)
 
 # Comparaciones de modelos
 
-modelo1 <- Arima(ventana, order = c(2,1,1)) # Modelo de autoarima
+modelo1 <- Arima(ventana, order = c(3,1,0)) # Modelo de autoarima
 
 modelo2 <- Arima(ventana, order = c(0,1,2))
 
 modelo3 <- Arima(ventana, order = c(2,1,0))
+
+modelo4 <- Arima(ventana, order = c(0,1,3))
 
 # Graficos de residuales
 
@@ -66,6 +72,8 @@ checkresiduals(modelo1)
 checkresiduals(modelo2)
 
 checkresiduals(modelo3)
+
+checkresiduals(modelo4)
 
 # Hipotesis de la prueba Ljung-box test
 #La prueba de Ljung-Box tiene una hipótesis nula H0 de que los residuos
@@ -113,8 +121,8 @@ accuracy(modelo3)
 #MPE: 0% - Sin sesgo porcentual direccional
 
 #MAPE:
-  
- # < 10%: Excelente
+
+# < 10%: Excelente
 
 #10-20%: Bueno
 
@@ -139,5 +147,5 @@ modelo3 %>%
   forecast(h=5,level = 0.95) %>%  
   autoplot(include=80)
 
-
-
+update.packages(ask = FALSE, checkBuilt = TRUE)
+update.packages(ask = FALSE, checkBuilt = TRUE, type = "binary")

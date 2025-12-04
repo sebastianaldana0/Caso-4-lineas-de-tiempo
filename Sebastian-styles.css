@@ -1,215 +1,269 @@
+/* Sebastian-styles.css - VERSIÓN CORREGIDA Y PERFECTA */
 
-
-@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500&display=swap');
 
 :root {
-  --white: #FFFFFF;
-  --cream-light: #FFFBF7;
-  --cream-medium: #F8F4F0;
-  --black: #000000;
-  --black-soft: #2C1810;
-  --brown-dark: #5D4037;
-  --brown-medium: #8B4513;
-  --brown-light: #A0522D;
-  --brown-accent: #D2691E;
-  --brown-warm: #CD853F;
-  --gold-light: #D4AF37;
-  --text-dark: #2C1810;
-  --text-medium: #5D4037;
-  --border-light: #E8E8E8;
+  --deep-black: #0A0A0A;
+  --rich-black: #1A1A1A;
+  --dark-charcoal: #2C2C2C;
+  --premium-gold: #D4AF37;
+  --luxury-gold: #FFD700;
+  --antique-gold: #B8860B;
+  --warm-brown: #8B4513;
+  --elegant-brown: #A0522D;
+  --light-gold: #FFF8DC;
+  --pure-white: #FFFFFF;
+  --text-gold: #D4AF37;
+  --text-light: #F5F5F5;
+  --text-dark: #333333;
+  --shadow-gold: 0 0 30px rgba(212, 175, 55, 0.4);
+  --shadow-strong: 0 0 50px rgba(212, 175, 55, 0.6);
 }
 
+/* ANIMACIONES CORREGIDAS */
+@keyframes goldShimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes elegantFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fadeInLuxury {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGold {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+  }
+}
+
+@keyframes borderFlow {
+  0% {
+    border-color: var(--premium-gold);
+  }
+  50% {
+    border-color: var(--luxury-gold);
+  }
+  100% {
+    border-color: var(--premium-gold);
+  }
+}
+
+/* FONDO PRINCIPAL ANIMADO - CORREGIDO */
 body {
-  font-family: 'Crimson Text', 'Times New Roman', serif;
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
   font-weight: 400;
   line-height: 1.7;
-  color: var(--text-dark);
-  background: var(--white) !important;
-  font-size: 16px;
+  color: var(--text-light);
+  background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #2C2C2C 100%) !important;
+  font-size: 17px;
   margin: 0;
   padding: 0;
-}
-
-/* PORTADA PERSONALIZADA */
-.custom-cover {
-  background: 
-    /* Gradiente sutil cafés */
-    linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(255, 255, 255, 1) 70%),
-    /* Imagen de portada */
-    url('Portada2.jpg') !important;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 4rem 2rem;
+  overflow-x: hidden;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
   position: relative;
-  overflow: hidden;
-  border-bottom: 8px solid var(--brown-medium);
 }
 
-/* Patrón geométrico inspirado en arte indígena */
-.custom-cover::before {
+/* FONDO ANIMADO SEPARADO - SOLO FONDO */
+body::before {
   content: '';
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    /* Patrón geométrico sutil */
-    radial-gradient(circle at 20% 80%, rgba(93, 64, 55, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
-    linear-gradient(45deg, transparent 60%, rgba(205, 133, 63, 0.05) 60%, rgba(205, 133, 63, 0.05) 70%, transparent 70%),
-    linear-gradient(-45deg, transparent 60%, rgba(160, 82, 45, 0.05) 60%, rgba(160, 82, 45, 0.05) 70%, transparent 70%);
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(139, 69, 19, 0.06) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 48%, rgba(212, 175, 55, 0.02) 50%, transparent 52%);
+  background-size: 500px 500px, 400px 400px, 80px 80px;
+  animation: goldShimmer 15s linear infinite;
+  z-index: -1;
   pointer-events: none;
-  z-index: 0;
-}
-
-.cover-content {
-  position: relative;
-  z-index: 2;
-  max-width: 800px;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 3rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(93, 64, 55, 0.2);
-  border: 2px solid var(--brown-warm);
-}
-
-.cover-title {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: 3.2rem;
-  font-weight: 700;
-  color: var(--black-soft);
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
-  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
-  border-bottom: 3px double var(--brown-medium);
-  padding-bottom: 1rem;
-}
-
-.cover-subtitle {
-  font-family: 'Crimson Text', serif;
-  font-size: 1.6rem;
-  color: var(--brown-dark);
-  margin-bottom: 2rem;
-  font-weight: 600;
-  font-style: italic;
-}
-
-.cover-authors {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: 1.3rem;
-  color: var(--brown-medium);
-  margin-bottom: 1.5rem;
-  font-weight: 500;
-}
-
-.cover-date {
-  font-family: 'Crimson Text', serif;
-  font-size: 1.1rem;
-  color: var(--brown-light);
-  font-style: italic;
-}
-
-.cover-institution {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: 1rem;
-  color: var(--brown-accent);
-  margin-top: 2rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
 /* CONTENIDO PRINCIPAL */
 .main-content {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 2rem auto;
   padding: 3rem;
-  background: var(--white);
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(42, 42, 42, 0.95) 100%);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--premium-gold);
+  border-radius: 8px;
   position: relative;
-  z-index: 1;
+  overflow: hidden;
+  animation: fadeInLuxury 1.2s ease-out;
+  backdrop-filter: blur(5px);
 }
 
-/* ENCABEZADOS CON ESTILO INDÍGENA COLOMBIANO */
+
+
+/* ENCABEZADOS CORREGIDOS */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Cinzel Decorative', 'Times New Roman', serif;
-  color: var(--black-soft) !important;
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  color: var(--text-gold) !important;
   border-bottom: none;
   margin-top: 2.5rem;
   margin-bottom: 1.5rem;
   font-weight: 600;
   position: relative;
+  z-index: 1;
+  text-align: left;
+  letter-spacing: 0.5px;
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: 3.2rem;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 3px double var(--brown-medium);
-  background: linear-gradient(90deg, transparent, rgba(139, 69, 19, 0.1), transparent);
-  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--luxury-gold) 0%, var(--premium-gold) 50%, var(--antique-gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  letter-spacing: 1px;
+}
+
+h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  background: linear-gradient(135deg, var(--luxury-gold) 0%, var(--premium-gold) 50%, var(--antique-gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--premium-gold), var(--luxury-gold), transparent);
+  animation: pulseElegant 3s infinite;
+}
+
+h1::before {
+  content: '✦';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--premium-gold);
+  font-size: 1.5rem;
+  animation: elegantFloat 4s ease-in-out infinite;
 }
 
 h2 {
-  font-size: 2rem;
-  border-left: 5px solid var(--brown-medium);
-  padding-left: 1.2rem;
+  font-size: 2.2rem;
+  padding-left: 0;
   margin-top: 3rem;
-  background: linear-gradient(90deg, rgba(139, 69, 19, 0.1) 0%, transparent 100%);
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
+  color: var(--premium-gold) !important;
+  position: relative;
+  border-bottom: 2px solid var(--premium-gold);
+  animation: fadeInLuxury 0.8s ease-out;
 }
 
 h3 {
-  font-size: 1.6rem;
-  color: var(--brown-dark) !important;
-  border-bottom: 2px solid var(--brown-light);
-  padding-bottom: 0.7rem;
+  font-size: 1.8rem;
+  color: var(--luxury-gold) !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  padding-bottom: 0.5rem;
   margin-top: 2.5rem;
+  font-family: 'Playfair Display', serif;
+  font-weight: 500;
 }
 
-h4 {
-  font-size: 1.4rem;
-  color: var(--brown-medium) !important;
-  margin-top: 2rem;
-  font-weight: 600;
+/* PÁRRAFOS Y TEXTO */
+.main-content p {
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  margin-bottom: 1.5rem;
+  color: var(--text-light);
+  line-height: 1.7;
+  font-size: 1.05rem;
+  font-family: 'Inter', sans-serif;
 }
 
-/* TOC - TABLA DE CONTENIDOS ESTILO CAFÉ */
+/* TOC CORREGIDO - COLORES ADECUADOS */
 #TOC {
-  background: var(--cream-light) !important;
-  border: 2px solid var(--brown-medium) !important;
-  border-radius: 12px !important;
+  background: linear-gradient(135deg, rgba(42, 42, 42, 0.95) 0%, rgba(26, 26, 26, 0.98) 100%) !important;
+  border: 2px solid var(--premium-gold) !important;
+  border-radius: 8px !important;
   padding: 2rem !important;
   margin: 2rem 0 !important;
-  box-shadow: 0 4px 20px rgba(93, 64, 55, 0.1) !important;
-  font-family: 'Cinzel Decorative', serif !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+  font-family: 'Cinzel', serif !important;
+  position: relative;
+  animation: fadeInLuxury 0.8s ease-out;
+  max-width: 100%;
+  color: var(--text-light) !important;
+}
+
+/* Forzar colores en todos los elementos del TOC */
+#TOC * {
+  color: var(--text-light) !important;
+  background: transparent !important;
 }
 
 #TOC::before {
-  content: "Índice de Contenidos";
+  content: "CONTENIDOS";
   display: block;
-  font-family: 'Cinzel Decorative', serif;
-  font-size: 1.4rem;
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--brown-dark);
+  color: var(--premium-gold) !important;
   margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--brown-medium);
+  padding-bottom: 0.8rem;
+  border-bottom: 2px solid var(--premium-gold);
+  text-align: center;
+  letter-spacing: 1px;
+  background: transparent !important;
 }
 
 #TOC ul {
   list-style: none !important;
   padding-left: 0 !important;
   margin: 0 !important;
+  background: transparent !important;
 }
 
 #TOC li {
@@ -217,194 +271,310 @@ h4 {
   padding: 0 !important;
   border-left: 3px solid transparent;
   transition: all 0.3s ease;
+  background: transparent !important;
 }
 
 #TOC li:hover {
-  border-left-color: var(--brown-medium);
-  background: rgba(139, 69, 19, 0.1);
+  border-left-color: var(--luxury-gold) !important;
+  background: rgba(212, 175, 55, 0.1) !important;
 }
 
 #TOC a {
-  color: var(--text-medium) !important;
+  color: var(--text-light) !important;
   text-decoration: none !important;
-  font-family: 'Crimson Text', serif !important;
-  font-size: 1rem !important;
-  padding: 0.5rem 1rem !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 1.05rem !important;
+  padding: 0.8rem 1rem !important;
   display: block !important;
   transition: all 0.3s ease !important;
   border-radius: 4px;
+  background: transparent !important;
 }
 
 #TOC a:hover {
-  color: var(--black-soft) !important;
-  background: rgba(139, 69, 19, 0.1) !important;
-  transform: translateX(5px);
+  color: var(--luxury-gold) !important;
+  background: rgba(212, 175, 55, 0.05) !important;
+  padding-left: 1.5rem !important;
 }
 
-/* BLOQUES DE CÓDIGO CON TEMÁTICA CAFÉ */
+/* Estilos específicos para los números de sección del TOC */
+#TOC .toc-section-number {
+  color: var(--premium-gold) !important;
+}
+
+#TOC .toc-active {
+  background: rgba(212, 175, 55, 0.15) !important;
+  border-left-color: var(--luxury-gold) !important;
+}
+
+/* PORTADA DE LUJO - SIN CARAS */
+.page-header {
+  background: 
+    linear-gradient(135deg, 
+      rgba(10, 10, 10, 0.95) 0%, 
+      rgba(26, 26, 26, 0.98) 50%, 
+      rgba(42, 42, 42, 0.95) 100%),
+    url('Portada.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  color: var(--pure-white);
+  padding: 8rem 2rem !important;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  border-bottom: 4px solid var(--premium-gold);
+  margin-bottom: 4rem !important;
+  position: relative;
+  overflow: hidden;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: fadeInLuxury 1.5s ease-out;
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(45deg, 
+      rgba(212, 175, 55, 0.1) 0%, 
+      transparent 20%,
+      transparent 80%,
+      rgba(139, 69, 19, 0.1) 100%),
+    radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.05) 0%, transparent 70%),
+    radial-gradient(circle at 80% 70%, rgba(139, 69, 19, 0.05) 0%, transparent 70%);
+  z-index: 1;
+}
+
+.page-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(212, 175, 55, 0.1), 
+    transparent);
+  animation: goldShimmer 6s linear infinite;
+  z-index: 2;
+}
+
+.page-header h1 {
+  color: transparent !important;
+  font-size: 4.5rem;
+  font-weight: 700;
+  border-bottom: none;
+  margin-bottom: 2rem;
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 3;
+  background: linear-gradient(135deg, 
+    var(--luxury-gold) 0%, 
+    var(--premium-gold) 25%, 
+    #FFFFFF 50%, 
+    var(--premium-gold) 75%, 
+    var(--antique-gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+  animation: fadeInLuxury 2s ease-out;
+}
+
+.page-header h2 {
+  color: var(--light-gold) !important;
+  font-size: 2.2rem;
+  font-weight: 300;
+  border-bottom: none;
+  font-family: 'Playfair Display', serif;
+  background: none;
+  padding: 0;
+  position: relative;
+  z-index: 3;
+  font-style: italic;
+  border: none;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  margin-top: 1rem;
+  animation: fadeInLuxury 2.2s ease-out;
+}
+
+.page-header .author-info {
+  position: relative;
+  z-index: 3;
+  margin-top: 3rem;
+  animation: fadeInLuxury 2.4s ease-out;
+}
+
+.page-header .author-info p {
+  color: var(--light-gold);
+  font-family: 'Inter', sans-serif;
+  font-size: 1.2rem;
+  margin: 0.5rem 0;
+  letter-spacing: 0.5px;
+}
+
+
+/* BLOQUES DE CÓDIGO */
 pre.sourceCode {
   display: block !important;
-  background: var(--cream-medium) !important;
-  color: var(--text-dark) !important;
-  padding: 15px !important;
-  border: none !important;
-  border-radius: 8px !important;
+  background: linear-gradient(135deg, #1A1A1A 0%, #2C2C2C 100%) !important;
+  color: var(--light-gold) !important;
+  padding: 1.5rem !important;
+  border: 1px solid var(--premium-gold) !important;
+  border-radius: 6px !important;
   overflow-x: auto;
-  margin: 15px 0 !important;
+  margin: 1.5rem 0 !important;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-size: 0.85em;
-  line-height: 1.4;
-  border-left: 4px solid var(--brown-medium) !important;
-  box-shadow: 0 2px 8px rgba(93, 64, 55, 0.1);
+  font-size: 0.9em;
+  line-height: 1.5;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: fadeInLuxury 0.6s ease-out;
 }
 
-pre.sourceCode code {
-  background: transparent !important;
-  color: var(--text-dark) !important;
-  padding: 0 !important;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+pre.sourceCode:hover {
+  animation: pulseGold 2s infinite;
 }
 
-/* COLORES DE SINTAXIS EN TONOS CAFÉS */
-pre.sourceCode code .kw { color: var(--brown-dark); font-weight: bold; }
-pre.sourceCode code .dt { color: var(--brown-medium); }
-pre.sourceCode code .dv { color: var(--brown-light); }
-pre.sourceCode code .st { color: var(--brown-medium); }
-pre.sourceCode code .co { color: var(--text-medium); font-style: italic; }
-pre.sourceCode code .ot { color: var(--brown-dark); }
-pre.sourceCode code .fu { color: var(--brown-dark); }
-pre.sourceCode code .va { color: var(--brown-medium); }
-
-/* TABLAS CON ESTILO CAFÉ */
-table {
-  font-family: 'Crimson Text', serif !important;
-  border: 2px solid var(--brown-medium) !important;
-  border-radius: 12px !important;
+/* TABLAS */
+.academic-table {
+  font-family: 'Inter', sans-serif !important;
+  border: 1px solid var(--premium-gold) !important;
+  border-radius: 6px !important;
   overflow: hidden !important;
-  box-shadow: 0 4px 20px rgba(93, 64, 55, 0.1) !important;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3) !important;
   margin: 2rem auto !important;
+  animation: fadeInLuxury 0.6s ease-out;
+  background: var(--rich-black);
 }
 
-thead th {
-  font-family: 'Cinzel Decorative', serif !important;
-  font-weight: 700 !important;
+.academic-table thead th {
+  font-family: 'Cinzel', serif !important;
+  font-weight: 600 !important;
   text-align: center !important;
   padding: 1.2rem !important;
-  border-bottom: 3px solid var(--brown-medium) !important;
-  background: linear-gradient(135deg, var(--brown-medium) 0%, var(--brown-dark) 100%) !important;
-  color: white !important;
+  border-bottom: 2px solid var(--premium-gold) !important;
+  background: linear-gradient(135deg, var(--premium-gold) 0%, var(--antique-gold) 100%) !important;
+  color: var(--deep-black) !important;
+  font-size: 1rem;
 }
 
-tbody tr {
+.academic-table tbody tr {
   transition: all 0.3s ease !important;
-  background: var(--white);
+  background: var(--rich-black);
 }
 
-tbody tr:nth-child(even) {
-  background: var(--cream-light);
+.academic-table tbody tr:nth-child(even) {
+  background: var(--dark-charcoal);
 }
 
-tbody tr:hover {
-  background-color: rgba(139, 69, 19, 0.1) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.2) !important;
+.academic-table tbody tr:hover {
+  background-color: rgba(212, 175, 55, 0.1) !important;
 }
 
-td {
+.academic-table td {
   padding: 1rem !important;
-  border-bottom: 1px solid var(--border-light) !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
   vertical-align: top !important;
-  color: var(--text-dark);
+  color: var(--text-light);
+  text-align: justify;
 }
 
-/* FOOTER ACADÉMICO */
+/* BOTONES */
+.code-toggle-btn {
+  background: linear-gradient(135deg, var(--premium-gold), var(--antique-gold));
+  color: var(--deep-black) !important;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 4px;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+  margin: 0 0.5rem;
+}
+
+.code-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+/* FOOTER */
 .academic-footer {
   text-align: center;
-  color: var(--brown-medium);
-  margin-top: 5rem;
+  color: var(--premium-gold);
+  margin-top: 4rem;
   padding: 3rem 2rem;
-  border-top: 3px double var(--brown-medium);
-  font-family: 'Cinzel Decorative', serif;
-  background: var(--cream-light);
+  border-top: 2px solid var(--premium-gold);
+  font-family: 'Cinzel', serif;
+  background: linear-gradient(135deg, var(--rich-black) 0%, var(--dark-charcoal) 100%);
   border-radius: 8px 8px 0 0;
-  position: relative;
+  animation: fadeInLuxury 0.8s ease-out;
 }
 
-/* MEJORAS RESPONSIVE */
+/* ELEMENTOS DECORATIVOS ANIMADOS */
+.floating-element {
+  animation: elegantFloat 4s ease-in-out infinite;
+}
+
+.pulse-element {
+  animation: pulseGold 3s infinite;
+}
+
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .main-content {
-    padding: 1rem;
-    margin: 0.5rem;
+    padding: 1.5rem;
+    margin: 1rem;
   }
   
-  .custom-cover {
-    padding: 2rem 1rem;
-    min-height: 70vh;
+  h1 {
+    font-size: 2.5rem;
   }
   
-  .cover-content {
-    padding: 2rem;
+  h2 {
+    font-size: 1.8rem;
   }
   
-  .cover-title {
-    font-size: 2.2rem;
+  .page-header {
+    padding: 4rem 1.5rem !important;
+    min-height: 400px;
   }
   
-  .cover-subtitle {
-    font-size: 1.3rem;
+  .page-header h1 {
+    font-size: 2.8rem;
+  }
+  
+  .page-header h2 {
+    font-size: 1.5rem;
   }
 }
 
-/* JUSTIFICACIÓN DE PÁRRAFOS */
-.main-content p {
-  text-align: justify;
-  text-justify: inter-word;
-  hyphens: auto;
-  margin-bottom: 1.2rem;
-  color: var(--text-dark);
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* ENLACES */
-a {
-  color: var(--brown-medium);
-  text-decoration: none;
-  transition: all 0.3s ease;
+::-webkit-scrollbar-track {
+  background: var(--rich-black);
 }
 
-a:hover {
-  color: var(--brown-dark);
-  text-decoration: underline;
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--premium-gold), var(--antique-gold));
+  border-radius: 4px;
 }
 
-/* LISTAS */
-ul, ol {
-  color: var(--text-dark);
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--luxury-gold), var(--premium-gold));
 }
-
-li {
-  margin-bottom: 0.5rem;
-}
-
-/* CITAS Y BLOQUES */
-blockquote {
-  border-left: 4px solid var(--brown-medium);
-  background: var(--cream-light);
-  padding: 1rem 1.5rem;
-  margin: 1.5rem 0;
-  font-style: italic;
-  color: var(--text-medium);
-}
-
-/* FIGURAS Y GRÁFICOS */
-.figure {
-  text-align: center;
-  margin: 2rem 0;
-}
-
-.caption {
-  font-family: 'Crimson Text', serif;
-  font-style: italic;
-  color: var(--brown-medium);
-  margin-top: 0.5rem;
-}
-
