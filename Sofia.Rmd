@@ -1,0 +1,603 @@
+---
+output:
+  html_document:
+    css: Sebastian-styles1.css
+    theme: null
+    highlight: null
+    self_contained: true
+    toc: false
+    df_print: kable
+---
+
+
+```{=html}
+<script>
+// Función mejorada para mostrar/ocultar TODO el código R
+function toggleAllCode() {
+  // Seleccionar TODOS los contenedores de código que R Markdown genera
+  var codeContainers = document.querySelectorAll('pre:not(.r-output), div.sourceCode pre');
+  var button = document.querySelector('.floating-code-btn');
+  
+  if (!button || codeContainers.length === 0) {
+    console.warn('No se encontraron bloques de código o el botón');
+    return;
+  }
+  
+  var allHidden = true;
+  
+  // Verificar si algún código está visible
+  codeContainers.forEach(function(container) {
+    if (container.style.display !== 'none') {
+      allHidden = false;
+    }
+  });
+  
+  // Mostrar u ocultar todo el código
+  codeContainers.forEach(function(container) {
+    if (allHidden) {
+      container.style.display = 'block';
+      container.classList.add('code-visible');
+      // Animación suave
+      container.style.opacity = '0';
+      setTimeout(function() {
+        container.style.transition = 'opacity 0.3s ease';
+        container.style.opacity = '1';
+      }, 10);
+    } else {
+      container.style.transition = 'opacity 0.3s ease';
+      container.style.opacity = '0';
+      setTimeout(function() {
+        container.style.display = 'none';
+        container.classList.remove('code-visible');
+      }, 300);
+    }
+  });
+  
+  // Cambiar texto del botón
+  if (allHidden) {
+    button.innerHTML = '📝 Ocultar Todo el Código R';
+  } else {
+    button.innerHTML = '📝 Mostrar Todo el Código R';
+  }
+}
+
+// Ocultar código al cargar la página - MEJORADO
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var codeContainers = document.querySelectorAll('pre:not(.r-output), div.sourceCode pre');
+    console.log('Bloques de código encontrados:', codeContainers.length);
+    
+    codeContainers.forEach(function(container) {
+      container.style.display = 'none';
+      // Agregar clase para identificación
+      container.classList.add('r-code-block');
+    });
+    
+    // Verificar que el botón existe
+    var button = document.querySelector('.floating-code-btn');
+    if (button) {
+      console.log('Botón de toggle encontrado y funcional');
+    } else {
+      console.error('¡Botón no encontrado!');
+    }
+  }, 500); // Aumentado el delay para asegurar que todo esté cargado
+});
+</script>
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  fig.width = 7,
+  fig.height = 4.5,
+  out.width = "95%",
+  class.source = "r-code-chunk",
+  dev = "png",
+  dpi = 120
+)
+
+library(ggplot2)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(tibble)
+library(showtext)
+library(factoextra)
+
+# Configurar fuentes financieras
+font_add_google("Roboto", "Roboto")
+font_add_google("Inter", "Inter")
+font_add_google("Open Sans", "Open Sans")
+showtext_auto()
+
+options(kableExtra.html.bsTable = TRUE)
+
+# =============================================================================
+# TEMA GGPLOT2 PERSONALIZADO - TEMA iSHARES
+# =============================================================================
+
+theme_ishares <- function() {
+  theme_minimal(base_size = 11) +
+    theme(
+      text = element_text(family = "Inter", size = 11, color = "#2E3842"),
+      
+      plot.title = element_text(
+        family = "Roboto",
+        size = 14,
+        face = "bold", 
+        hjust = 0.5,
+        color = "#001A5C",
+        margin = margin(b = 15)
+      ),
+      plot.subtitle = element_text(
+        family = "Roboto",
+        size = 12,
+        hjust = 0.5,
+        color = "#5D6D7E",
+        margin = margin(b = 12)
+      ),
+      plot.caption = element_text(
+        family = "Inter",
+        size = 9,
+        color = "#5D6D7E",
+        hjust = 0.5,
+        face = "italic",
+        margin = margin(t = 10)
+      ),
+      
+      axis.title = element_text(
+        family = "Roboto",
+        size = 11,
+        face = "bold",
+        color = "#0056B3"
+      ),
+      axis.title.x = element_text(margin = margin(t = 10)),
+      axis.title.y = element_text(margin = margin(r = 10)),
+      axis.text = element_text(
+        family = "Inter",
+        size = 10,
+        color = "#5D6D7E",
+        face = "plain"
+      ),
+      axis.line = element_line(color = "#0056B3", linewidth = 0.5),
+      axis.ticks = element_line(color = "#007BFF", linewidth = 0.3),
+      
+      legend.title = element_text(
+        family = "Roboto",
+        size = 11,
+        face = "bold",
+        color = "#001A5C"
+      ),
+      legend.text = element_text(
+        family = "Inter", 
+        size = 10,
+        color = "#5D6D7E"
+      ),
+      legend.background = element_rect(fill = "#F5F7FA", color = "#D1D8E0"),
+      legend.key = element_rect(fill = "#F5F7FA", color = NA),
+      
+      panel.grid.major = element_line(
+        color = "#E8ECF1", 
+        linewidth = 0.5,
+        linetype = "solid"
+      ),
+      panel.grid.minor = element_line(
+        color = "#F5F7FA", 
+        linewidth = 0.3,
+        linetype = "solid"
+      ),
+      panel.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = "white", color = NA),
+      
+      plot.margin = margin(15, 15, 15, 15),
+      panel.spacing = unit(1.5, "lines"),
+      
+      strip.background = element_rect(
+        fill = "#0056B3",
+        color = "#0056B3",
+        linewidth = 1
+      ),
+      strip.text = element_text(
+        family = "Roboto",
+        color = "white",
+        face = "bold",
+        size = 11
+      )
+    )
+}
+
+# ⭐ APLICAR EL TEMA iSHARES AUTOMÁTICAMENTE A GGPLOT2
+theme_set(theme_ishares())
+
+# =============================================================================
+# FUNCIÓN WRAPPER PARA FACTOEXTRA - VERSIÓN iSHARES
+# =============================================================================
+
+fviz_eig_ishares <- function(...) {
+  p <- fviz_eig(..., ggtheme = theme_void())
+  p + theme_ishares()
+}
+
+fviz_pca_ishares <- function(...) {
+  p <- fviz_pca(..., ggtheme = theme_void())
+  p + theme_ishares()
+}
+
+fviz_pca_ind_ishares <- function(...) {
+  p <- fviz_pca_ind(..., ggtheme = theme_void())
+  p + theme_ishares()
+}
+
+fviz_pca_var_ishares <- function(...) {
+  p <- fviz_pca_var(..., ggtheme = theme_void())
+  p + theme_ishares()
+}
+
+fviz_pca_biplot_ishares <- function(...) {
+  p <- fviz_pca_biplot(..., ggtheme = theme_void())
+  p + theme_ishares()
+}
+
+fviz_dend_ishares <- function(...) {
+  p <- fviz_dend(..., ggtheme = theme_void())
+  p + theme_ishares()
+}
+
+fviz_cluster_ishares <- function(...) {
+  p <- fviz_cluster(..., ggtheme = theme_void())
+  p + theme_ishares()
+}
+
+# =============================================================================
+# PALETA DE COLORES iSHARES
+# =============================================================================
+
+colores_ishares <- c(
+  "#001A5C",  # Azul oscuro iShares
+  "#0056B3",  # Azul medio
+  "#007BFF",  # Azul claro
+  "#00B0F0",  # Cian
+  "#2E3842",  # Gris oscuro
+  "#5D6D7E",  # Gris medio
+  "#00A859",  # Verde para positivos
+  "#E74C3C",  # Rojo para negativos
+  "#D4AF37",  # Dorado para destacados
+  "#A6ACB5"   # Plata para elementos secundarios
+)
+
+scale_color_ishares <- function(palette = colores_ishares, ...) {
+  scale_color_manual(values = palette, ...)
+}
+
+scale_fill_ishares <- function(palette = colores_ishares, ...) {
+  scale_fill_manual(values = palette, ...)
+}
+
+scale_fill_gradient_ishares <- function(low = "#00B0F0", high = "#001A5C", ...) {
+  scale_fill_gradient(low = low, high = high, ...)
+}
+
+scale_color_gradient_ishares <- function(low = "#00B0F0", high = "#001A5C", ...) {
+  scale_color_gradient(low = low, high = high, ...)
+}
+
+# =============================================================================
+# FUNCIONES PARA INDICADORES FINANCIEROS
+# =============================================================================
+
+# Función para mostrar cambios de precio
+format_price_change <- function(value) {
+  if (value >= 0) {
+    sprintf("<span style='color:#00A859;font-weight:bold;'>+%.2f%%</span>", value)
+  } else {
+    sprintf("<span style='color:#E74C3C;font-weight:bold;'>%.2f%%</span>", value)
+  }
+}
+
+# Función para colores condicionales en tablas
+colorize_cell <- function(value, type = "return") {
+  if (type == "return") {
+    if (value >= 0) {
+      kableExtra::cell_spec(value, color = "#00A859", bold = TRUE)
+    } else {
+      kableExtra::cell_spec(value, color = "#E74C3C", bold = TRUE)
+    }
+  } else if (type == "volume") {
+    kableExtra::cell_spec(value, color = "#0056B3", bold = FALSE)
+  } else {
+    kableExtra::cell_spec(value, color = "#2E3842", bold = FALSE)
+  }
+}
+
+# =============================================================================
+# SOBRESCRIBIR KABLE PARA AUTO-ESTILIZADO CON TEMA iSHARES
+# =============================================================================
+
+kable_original <- knitr::kable
+
+kable <- function(x, format = "html", ..., 
+                  bootstrap_options = c("striped", "hover", "condensed"),
+                  full_width = TRUE,
+                  position = "center",
+                  financial_table = FALSE) {
+  
+  if (inherits(x, "knitr_kable")) {
+    return(x)
+  }
+  
+  if (financial_table) {
+    # Estilo especial para tablas financieras
+    tabla <- kable_original(x, format = format, ...) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+        full_width = full_width,
+        position = position,
+        font_size = 13,
+        html_font = "Inter, 'Segoe UI', sans-serif"
+      ) %>%
+      row_spec(0, 
+               bold = TRUE, 
+               background = "linear-gradient(135deg, #001A5C 0%, #0056B3 100%)",
+               color = "white",
+               font_size = 14,
+               align = "c") %>%
+      row_spec(1:nrow(x), 
+               extra_css = "transition: background-color 0.3s;") %>%
+      column_spec(1, bold = TRUE, color = "#001A5C")
+  } else {
+    # Estilo estándar
+    tabla <- kable_original(x, format = format, ...) %>%
+      kable_styling(
+        bootstrap_options = bootstrap_options,
+        full_width = full_width,
+        position = position,
+        font_size = 13,
+        html_font = "Inter, 'Segoe UI', sans-serif"
+      ) %>%
+      row_spec(0, 
+               bold = TRUE, 
+               background = "#001A5C",
+               color = "white",
+               font_size = 14)
+  }
+  
+  return(tabla)
+}
+
+kbl_original <- kableExtra::kbl
+
+kbl <- function(x, format = "html", ..., financial = FALSE) {
+  if (financial) {
+    tabla <- kbl_original(x, format = format, ...) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+        full_width = TRUE,
+        position = "center",
+        font_size = 13,
+        html_font = "Inter, 'Segoe UI', sans-serif"
+      ) %>%
+      row_spec(0, 
+               bold = TRUE, 
+               background = "linear-gradient(135deg, #001A5C 0%, #0056B3 100%)",
+               color = "white",
+               font_size = 14) %>%
+      column_spec(1, bold = TRUE, color = "#001A5C")
+  } else {
+    tabla <- kbl_original(x, format = format, ...) %>%
+      kable_styling(
+        bootstrap_options = c("striped", "hover", "condensed"),
+        full_width = TRUE,
+        position = "center",
+        font_size = 13,
+        html_font = "Inter, 'Segoe UI', sans-serif"
+      ) %>%
+      row_spec(0, 
+               bold = TRUE, 
+               background = "#001A5C",
+               color = "white",
+               font_size = 14)
+  }
+  
+  return(tabla)
+}
+
+# =============================================================================
+# FUNCIONES ADICIONALES PARA ANÁLISIS FINANCIERO
+# =============================================================================
+
+# Calculadora de rendimientos
+calculate_returns <- function(prices, period = "daily") {
+  returns <- diff(prices) / prices[-length(prices)]
+  
+  if (period == "annual") {
+    returns <- returns * 252  # Días de trading anuales
+  } else if (period == "monthly") {
+    returns <- returns * 21   # Días de trading mensuales
+  }
+  
+  return(returns)
+}
+
+# Métricas de riesgo
+calculate_risk_metrics <- function(returns) {
+  list(
+    mean_return = mean(returns, na.rm = TRUE),
+    sd_return = sd(returns, na.rm = TRUE),
+    sharpe_ratio = ifelse(sd(returns, na.rm = TRUE) > 0, 
+                          mean(returns, na.rm = TRUE) / sd(returns, na.rm = TRUE), 
+                          NA),
+    max_drawdown = min(returns, na.rm = TRUE)
+  )
+}
+
+
+format_financial <- function(x, type = "price") {
+  if (type == "price") {
+    scales::dollar(x, accuracy = 0.01)
+  } else if (type == "percent") {
+    scales::percent(x, accuracy = 0.01)
+  } else if (type == "volume") {
+    if (x >= 1e9) {
+      paste0(scales::comma(x/1e9, accuracy = 0.1), "B")
+    } else if (x >= 1e6) {
+      paste0(scales::comma(x/1e6, accuracy = 0.1), "M")
+    } else {
+      scales::comma(x)
+    }
+  }
+}
+
+theme_financial <- function() {
+  theme_ishares() +
+    theme(
+      panel.grid.major.x = element_line(color = "#E8ECF1", linewidth = 0.3),
+      panel.grid.major.y = element_line(color = "#E8ECF1", linewidth = 0.5),
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(color = "#001A5C", size = 16, face = "bold"),
+      axis.title = element_text(color = "#0056B3", size = 12),
+      legend.position = "bottom",
+      legend.box = "horizontal"
+    )
+}
+
+# Función para gráfico de velas (candlestick)
+plot_candlestick <- function(data, title = "Candlestick Chart") {
+  # data debe tener: Date, Open, High, Low, Close
+  ggplot(data) +
+    geom_linerange(aes(x = Date, ymin = Low, ymax = High), 
+                   color = "#5D6D7E", linewidth = 0.5) +
+    geom_rect(aes(xmin = Date - 0.45, xmax = Date + 0.45,
+                  ymin = pmin(Open, Close), ymax = pmax(Open, Close),
+                  fill = Close > Open), color = NA) +
+    scale_fill_manual(values = c("#E74C3C", "#00A859"), guide = FALSE) +
+    labs(title = title, x = "Fecha", y = "Precio") +
+    theme_financial()
+}
+
+# =============================================================================
+# INICIALIZACIÓN PARA ANÁLISIS DE SERIES TEMPORALES
+# =============================================================================
+
+library(quantmod)
+library(PerformanceAnalytics)
+library(TTR)
+library(xts)
+library(zoo)
+
+# Configurar opciones para series temporales financieras
+options("getSymbols.warning4.0" = FALSE)
+options("getSymbols.yahoo.warning" = FALSE)
+
+# Función para descargar datos de acciones
+get_stock_data <- function(symbol, start_date = "2020-01-01", end_date = Sys.Date()) {
+  getSymbols(symbol, 
+             from = start_date, 
+             to = end_date, 
+             auto.assign = FALSE)
+}
+
+```
+::::::::::::::::: container
+<!-- SIDEBAR -->
+
+:::: sidebar
+::: sidebar-header
+<img src="logo-ishares.png" alt="iShares by BlackRock" class="logo-ishares"/>
+
+<h1>Análisis Financiero</h1>
+
+<h2>iShares ETF Analysis</h2>
+:::
+
+<ul class="sidebar-nav">
+<li><a href="#introduccion" class="active">[📈]{.icon} Introducción</a></li>
+<li><a href="#datos">[📊]{.icon} Datos de Mercado</a></li>
+<li><a href="#metodologia">[🔧]{.icon} Metodología</a></li>
+<li><a href="#analisis-tecnico">[📉]{.icon} Análisis Técnico</a></li>
+<li><a href="#analisis-fundamental">[💹]{.icon} Análisis Fundamental</a></li>
+<li><a href="#riesgos">[⚠️]{.icon} Evaluación de Riesgos</a></li>
+<li><a href="#recomendaciones">[💡]{.icon} Recomendaciones</a></li>
+<li><a href="#bibliografia">[📚]{.icon} Bibliografía</a></li>
+</ul>
+::::
+
+<!-- CONTENIDO PRINCIPAL -->
+
+:::::::::::::: main-content
+<!-- ENCABEZADO -->
+
+::: main-header
+<h1>Segmentación de Países mediante Indicadores de Mortalidad</h1>
+
+<h2>**Análisis de técnicas de Aprendizaje No Supervisado - Banco Mundial**</h2>
+
+<h3>Universidad del Valle - Facultad de Ingeniería</h3>
+
+<h4>Melany Enriquez - Santiago Posada - Sofia Potosi - Valery Rivera</h4>
+:::
+
+<!-- RESUMEN EJECUTIVO -->
+
+::: {#resumen .content-card}
+<h2>Resumen</h2>
+
+<p>*Este estudio aplica técnicas de aprendizaje no supervisado para identificar patrones naturales de agrupación entre países basándose en 22 indicadores de mortalidad del Banco Mundial correspondientes al año 2019. Se empleó Análisis de Componentes Principales (ACP) para reducir la dimensionalidad del conjunto de datos, seguido de clusterización jerárquica mediante el método de Ward para identificar segmentos de países con perfiles de mortalidad similares. Los indicadores analizados incluyen expectativa de vida por sexo, mortalidad por enfermedades crónicas, mortalidad por causas externas (accidentes de tránsito, envenenamientos, suicidios), mortalidad infantil y neonatal desagregada por sexo, y supervivencia hasta los 65 años. Los resultados permitieron identificar grupos de países con características de mortalidad homogéneas internamente pero diferenciadas entre sí, proporcionando información para la formulación de políticas de salud pública basadas en evidencia.*</p>
+:::
+
+<!-- INTRODUCCIÓN -->
+
+::: {#introduccion .content-card}
+<h2>Introducción</h2>
+
+<p>La mortalidad constituye uno de los indicadores fundamentales para evaluar el estado de salud de las poblaciones y la efectividad de los sistemas sanitarios a nivel global. Los patrones de mortalidad reflejan diferencias significativas entre naciones, resultado de factores como acceso a servicios de salud, nivel de desarrollo económico, infraestructura sanitaria, calidad de la atención materno-infantil y magnitud de determinantes sociales. Estas variaciones no son únicamente atribuibles a regiones geográficas o niveles de ingresos, sino que responden a dinámicas epidemiológicas complejas que estructuran la carga de enfermedad de formas distintas en cada contexto nacional.</p>
+
+<p>Actualmente, la clasificación de países para fines de política sanitaria se realiza mediante categorías predefinidas basadas en criterios geográficos o económicos. Sin embargo, estas clasificaciones convencionales no necesariamente capturan las similitudes reales en los perfiles epidemiológicos entre naciones. Existe una desalineación entre las agrupaciones administrativas que utilizamos para organizar datos internacionales y la realidad de los patrones de mortalidad que los países efectivamente experimentan. Esto implica que una segmentación basada empíricamente en los propios datos de mortalidad podría revelar qué países enfrentan desafíos sanitarios comparables, independientemente de sus características tradicionales, facilitando intercambio de experiencias y estrategias relevantes entre contextos similares.</p>
+
+<p>Las técnicas de aprendizaje no supervisado permiten identificar estas estructuras naturales sin imponer categorías predeterminadas. El Análisis de Componentes Principales sintetiza múltiples indicadores correlacionados en dimensiones fundamentales que explican la variabilidad en mortalidad entre países. La clusterización jerárquica subsecuente agrupa naciones según similitud en estas dimensiones, produciendo segmentaciones coherentes que reflejan realidades epidemiológicas.</p>
+
+<p>El objetivo de este estudio es aplicar estas técnicas para segmentar 182 países según 22 indicadores de mortalidad del año 2019, identificando grupos de naciones con perfiles epidemiológicos similares. Se espera que los clusters resultantes revelen patrones de mortalidad que trascienden categorías convencionales, faciliten la caracterización de inequidades de género, y proporcionen una base empírica para el diseño de políticas de salud pública diferenciadas según contextos epidemiológicos reales.</p>
+:::
+
+<!-- DESCRIPCION DE LA FUENTE DE DATOS -->
+
+::: {#descripcionf .content-card}
+<h2>Descripción de la fuente de Datos</h2>
+
+<p>
+
+**Base de datos:** World Development Indicators (WDI) - Banco Mundial
+
+**Unidad de análisis:** País
+
+**Período:** 2019
+
+**Acceso:** <https://databank.worldbank.org/source/world-development-indicators>
+
+</p>
+
+<p>Los datos utilizados en esta investigación provienen de la base World Development Indicators del Banco Mundial, una de las compilaciones más exhaustivas de indicadores de desarrollo compilados a partir de fuentes internacionales estandarizadas. Esta base integra información de organismos especializados reconocidos mundialmente, incluyendo la Organización Mundial de la Salud (OMS), UNICEF y agencias especializadas de las Naciones Unidas, garantizando comparabilidad metodológica entre países y confiabilidad en la medición de indicadores. El año 2019 fue seleccionado como period
+
+<!-- ... resto del contenido ... -->
+
+<!-- FOOTER -->
+
+::: footer
+<p>Universidad del Valle - Facultad de Ingeniería</p>
+
+<p>Gestión de Datos - Profesor: Orlando Joaqui Barandica</p>
+
+<p>Fecha: `r format(Sys.Date(), "%d/%m/%Y")`</p>
+:::
+::::::::::::::
+::::::::::::::::::
+
+<!-- BOTÓN FLOTANTE ELEGANTE -->
+
+<button class="floating-code-btn" onclick="toggleAllCode()">
+
+📝 Mostrar Todo el Código
+
+</button>

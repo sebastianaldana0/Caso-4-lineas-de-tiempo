@@ -73,7 +73,7 @@
 
 /* FONDO PRINCIPAL ANIMADO - CORREGIDO */
 body {
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  font-family: 'Times New Roman', Times, serif;
   font-weight: 400;
   line-height: 1.7;
   color: var(--text-light);
@@ -125,7 +125,7 @@ body::before {
 
 /* ENCABEZADOS CORREGIDOS */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-family: 'Times New Roman', Times, serif;
   color: var(--text-gold) !important;
   border-bottom: none;
   margin-top: 2.5rem;
@@ -138,7 +138,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: 3.2rem;
+  font-size:2.8rem;
   font-weight: 700;
   text-align: center;
   margin-bottom: 2.5rem;
@@ -577,4 +577,422 @@ pre.sourceCode:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, var(--luxury-gold), var(--premium-gold));
+}
+
+/* Contenedor principal de controles */
+.code-toggle-container {
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(42, 42, 42, 0.95) 100%);
+  border: 1px solid var(--premium-gold);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeInLuxury 0.8s ease-out;
+}
+
+.code-toggle-container h4 {
+  font-family: 'Cinzel', serif;
+  color: var(--premium-gold) !important;
+  margin-top: 0;
+  font-size: 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--premium-gold);
+  padding-bottom: 0.8rem;
+}
+
+.code-toggle-container p {
+  text-align: center;
+  color: var(--light-gold) !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Botones principales */
+.code-toggle-btn {
+  background: linear-gradient(135deg, var(--premium-gold), var(--antique-gold));
+  color: var(--deep-black) !important;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  margin: 0.5rem;
+  border-radius: 4px;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+  display: inline-block;
+}
+
+.code-toggle-btn.secondary {
+  background: linear-gradient(135deg, #333, #555);
+  color: var(--luxury-gold) !important;
+}
+
+.code-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+/* Contenedor de cada bloque de código */
+.code-chunk {
+  margin: 2rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeInLuxury 0.6s ease-out;
+}
+
+/* Encabezado del bloque de código */
+.code-header {
+  background: linear-gradient(90deg, #2a2a2a, #3a3a3a);
+  color: var(--luxury-gold);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: bold;
+  border-bottom: 1px solid var(--premium-gold);
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+}
+
+.code-header:hover {
+  background: linear-gradient(90deg, #2a2a2a, #4a4a4a);
+}
+
+/* Título del chunk */
+.chunk-title {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+/* Indicador de estado (verde/rojo) */
+.code-status {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.code-status.visible {
+  background-color: #4CAF50;
+  box-shadow: 0 0 8px #4CAF50;
+}
+
+.code-status.hidden {
+  background-color: #f44336;
+  box-shadow: 0 0 8px #f44336;
+}
+
+/* Icono de flecha */
+.toggle-icon {
+  transition: transform 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.toggle-icon.rotated {
+  transform: rotate(-90deg);
+}
+
+/* Contenido del código (expandible) */
+.code-content {
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.code-content.expanded {
+  max-height: 5000px;
+  opacity: 1;
+}
+
+.code-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0 !important;
+}
+
+/* Asegurar que el código dentro se vea bien */
+.code-content pre.sourceCode {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Animación específica para partículas doradas (si ya no está) */
+@keyframes goldShimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Media queries para responsividad */
+@media (max-width: 768px) {
+  .code-toggle-container {
+    padding: 1rem;
+  }
+  
+  .code-toggle-btn {
+    display: block;
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+  
+  .code-header {
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* SEBASTIAN-STYLES.CSS - VERSIÓN CON BOTÓN FLOTANTE */
+
+/* ===== QUITAR CONTENEDOR DE BOTONES DEL INICIO ===== */
+.code-toggle-container {
+  display: none !important;
+}
+
+/* ===== BOTÓN FLOTANTE EN ESQUINA ===== */
+.fixed-code-toggle {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--premium-gold), var(--antique-gold));
+  color: var(--deep-black);
+  border: 2px solid var(--luxury-gold);
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 6px 25px rgba(212, 175, 55, 0.5), 
+              0 0 30px rgba(212, 175, 55, 0.3);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  animation: pulseGold 2s infinite;
+}
+
+.fixed-code-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.7), 
+              0 0 40px rgba(212, 175, 55, 0.4);
+  animation: none;
+}
+
+.fixed-code-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Tooltip para el botón */
+.fixed-code-toggle::after {
+  content: "Controles de Código";
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(42, 42, 42, 0.95));
+  color: var(--luxury-gold);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: 'Cinzel', serif;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  border: 1px solid var(--premium-gold);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.fixed-code-toggle:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Panel desplegable de controles */
+.code-controls-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.98), rgba(42, 42, 42, 0.98));
+  border: 2px solid var(--premium-gold);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: none;
+  animation: fadeInLuxury 0.3s ease-out;
+  backdrop-filter: blur(10px);
+  min-width: 250px;
+}
+
+.code-controls-panel.active {
+  display: block;
+}
+
+.code-controls-panel h4 {
+  color: var(--premium-gold) !important;
+  font-family: 'Cinzel', serif;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  text-align: center;
+  border-bottom: 1px solid var(--premium-gold);
+  padding-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.control-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-btn {
+  background: linear-gradient(135deg, var(--dark-charcoal), var(--rich-black));
+  color: var(--light-gold);
+  border: 1px solid var(--premium-gold);
+  padding: 0.8rem 1rem;
+  border-radius: 4px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-btn:hover {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(139, 69, 19, 0.2));
+  transform: translateX(-5px);
+  border-color: var(--luxury-gold);
+}
+
+.control-btn i {
+  color: var(--premium-gold);
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+/* Botón de cerrar panel */
+.close-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--luxury-gold);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-panel:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+/* Ícono de menú en el botón */
+.menu-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 24px;
+  height: 24px;
+}
+
+.menu-icon span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: var(--deep-black);
+  transition: all 0.3s ease;
+}
+
+.fixed-code-toggle.active .menu-icon span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.fixed-code-toggle.active .menu-icon span:nth-child(2) {
+  opacity: 0;
+}
+
+.fixed-code-toggle.active .menu-icon span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Estilos para los chunks de código (se mantienen igual) */
+.code-chunk {
+  margin: 2rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeInLuxury 0.6s ease-out;
+}
+
+.code-header {
+  background: linear-gradient(90deg, #2a2a2a, #3a3a3a);
+  color: var(--luxury-gold);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: bold;
+  border-bottom: 1px solid var(--premium-gold);
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+}
+
+.code-header:hover {
+  background: linear-gradient(90deg, #2a2a2a, #4a4a4a);
+}
+
+.code-content.expanded {
+  max-height: 5000px;
+  opacity: 1;
+}
+
+.code-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0 !important;
+}
+
+/* Responsive para el botón flotante */
+@media (max-width: 768px) {
+  .fixed-code-toggle {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+  
+  .code-controls-panel {
+    bottom: 80px;
+    right: 20px;
+    min-width: 220px;
+  }
+  
+  .fixed-code-toggle::after {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
 }

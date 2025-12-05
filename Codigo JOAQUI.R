@@ -103,24 +103,14 @@ accion[4891:4895]
 
 #Gráfico
 modelo2 %>% 
-  forecast(h=5) %>%  # (Realizo 5 pronósticos)
-  autoplot(include=80)   # Gráfico los últimos 80 valores + pronóstico (se puede cambiar el 80)
+  forecast(h=5) %>%  
+  autoplot(include=80)  
 
 
 # Con la función xts(serie, order=date) se cargan los datos
 
 
 
-
-library(readxl)
-Data <- read_excel("Datos/BaseEjemplo.xlsx", col_types = c("date", 
-                                                           "numeric"))
-View(Data)
-
-
-Serie<-xts(Data$Y,order.by = Data$fecha)
-
-autoplot(Serie)
 
 
 
